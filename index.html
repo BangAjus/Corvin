@@ -13,6 +13,7 @@
             --gray-bg: #F8FAFC;
             --error-red: #EF4444;
             --success-green: #10B981;
+            --human-amber: #F59E0B;
         }
 
         * {
@@ -53,10 +54,10 @@
         main {
             flex: 1;
             display: grid;
-            grid-template-columns: 300px 1fr;
+            grid-template-columns: 320px 1fr;
             gap: 20px;
             padding: 20px;
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             width: 100%;
         }
@@ -75,7 +76,27 @@
             font-size: 1.2rem;
             border-bottom: 2px solid var(--navy-primary);
             padding-bottom: 5px;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
+        }
+
+        .graph-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .graph-meta span {
+            background: var(--gray-bg);
+            border: 1px solid #CBD5E1;
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 0.72rem;
+            color: var(--navy-primary);
+        }
+
+        .graph-meta span strong {
+            color: var(--navy-light);
         }
 
         .scenario-btn {
@@ -90,6 +111,14 @@
             transition: all 0.2s ease;
         }
 
+        .scenario-btn .btn-desc {
+            display: block;
+            font-weight: normal;
+            font-size: 0.72rem;
+            opacity: 0.75;
+            margin-top: 3px;
+        }
+
         .scenario-btn:hover {
             background-color: var(--navy-primary);
             color: var(--white);
@@ -101,20 +130,30 @@
             box-shadow: 0 0 8px rgba(10, 37, 64, 0.5);
         }
 
+        .scenario-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
         .status-box {
             margin-top: auto;
             background: var(--navy-primary);
             color: var(--white);
             padding: 15px;
             border-radius: 6px;
-            font-size: 0.85rem;
-            max-height: 200px;
+            font-size: 0.82rem;
+            max-height: 320px;
             overflow-y: auto;
         }
 
         .status-box h3 {
             margin-bottom: 5px;
             color: #60A5FA;
+        }
+
+        #log-output div,
+        #log-output {
+            line-height: 1.5;
         }
 
         .simulation-container {
@@ -127,12 +166,18 @@
             flex-direction: column;
         }
 
-        .graph-area {
+        .graph-scroll {
             flex: 1;
+            overflow: auto;
             position: relative;
+        }
+
+        .graph-area {
+            position: relative;
+            width: 1000px;
+            height: 640px;
             background-image: radial-gradient(#CBD5E1 1px, transparent 1px);
             background-size: 20px 20px;
-            min-height: 500px;
         }
 
         /* Network Connections via SVG */
@@ -145,10 +190,36 @@
             pointer-events: none;
         }
 
+        .edge-line {
+            stroke: #94A3B8;
+            stroke-width: 2;
+            transition: stroke 0.25s ease, stroke-width 0.25s ease;
+        }
+
+        .edge-line.path-robot {
+            stroke: var(--navy-light);
+            stroke-width: 4;
+        }
+
+        .edge-line.path-human {
+            stroke: var(--human-amber);
+            stroke-width: 4;
+        }
+
+        .edge-weight {
+            font-size: 11px;
+            font-weight: bold;
+            fill: var(--navy-primary);
+            stroke: var(--white);
+            stroke-width: 3px;
+            paint-order: stroke;
+            text-anchor: middle;
+        }
+
         .node {
             position: absolute;
-            width: 90px;
-            height: 90px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             background-color: var(--white);
             border: 4px solid var(--navy-primary);
@@ -157,7 +228,7 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             cursor: pointer;
             transition: transform 0.2s, background-color 0.3s, border-color 0.3s;
             z-index: 10;
@@ -165,7 +236,7 @@
         }
 
         .node:hover {
-            transform: scale(1.05);
+            transform: scale(1.07);
         }
 
         .node.error {
@@ -179,9 +250,20 @@
             background-color: var(--white);
         }
 
+        @keyframes fixedFlash {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.65); }
+            70% { box-shadow: 0 0 0 18px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); }
+        }
+
+        .node.fixed-flash {
+            border-color: var(--success-green);
+            animation: fixedFlash 1s ease-out;
+        }
+
         .node-label {
             margin-top: 2px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #64748B;
         }
 
@@ -211,7 +293,7 @@
         }
 
         #human-finder {
-            background-color: #F59E0B;
+            background-color: var(--human-amber);
             border: 2px solid var(--white);
             color: var(--white);
             margin-left: 20px;
@@ -221,11 +303,12 @@
 
         .legend {
             display: flex;
+            flex-wrap: wrap;
             gap: 20px;
             padding: 15px;
             background: #F1F5F9;
             border-top: 2px solid var(--navy-primary);
-            font-size: 0.85rem;
+            font-size: 0.82rem;
         }
 
         .legend-item {
@@ -238,6 +321,7 @@
             width: 16px;
             height: 16px;
             border-radius: 4px;
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -246,15 +330,30 @@
 
     <header>
         <h1>Corvin</h1>
-        <p>Delta Competition Framework • Mobile Mini-Crane Node Tracking System</p>
+        <p>Delta Competition Framework • Mobile Mini-Crane Node Tracking System — Dijkstra Pathfinding Engine</p>
     </header>
 
     <main>
         <section class="control-panel">
             <h2>Scenarios</h2>
-            <button class="scenario-btn active" onclick="triggerScenario('A', this)">Scenario A: Idling</button>
-            <button class="scenario-btn" onclick="triggerScenario('B', this)">Scenario B: Robot Auto-Fix</button>
-            <button class="scenario-btn" onclick="triggerScenario('C', this)">Scenario C: Human Assist</button>
+            <div class="graph-meta">
+                <span><strong>8</strong> Nodes</span>
+                <span><strong id="edge-count">-</strong> Edges</span>
+                <span>Engine: <strong>Dijkstra</strong></span>
+            </div>
+
+            <button class="scenario-btn active" onclick="triggerScenario('A', this)">
+                Scenario A: Idle / Healthy
+                <span class="btn-desc">No faults. Robot idles at Main Node.</span>
+            </button>
+            <button class="scenario-btn" onclick="triggerScenario('B', this)">
+                Scenario B: Robot Auto-Fix
+                <span class="btn-desc">Random multi-node fault. Robot runs Dijkstra to reach and repair each one.</span>
+            </button>
+            <button class="scenario-btn" onclick="triggerScenario('C', this)">
+                Scenario C: Human Assist
+                <span class="btn-desc">Hidden faults invisible to sensors. Human locates, robot pathfinds to fix.</span>
+            </button>
 
             <div class="status-box">
                 <h3>System Logs</h3>
@@ -263,35 +362,12 @@
         </section>
 
         <section class="simulation-container">
-            <div class="graph-area" id="graph-area">
-                <svg class="network-lines">
-                    <line x1="150" y1="250" x2="400" y2="100" stroke="#0A2540" stroke-width="2" />
-                    <line x1="150" y1="250" x2="400" y2="400" stroke="#0A2540" stroke-width="2" />
-                    <line x1="400" y1="100" x2="650" y2="250" stroke="#0A2540" stroke-width="2" />
-                    <line x1="400" y1="400" x2="650" y2="250" stroke="#0A2540" stroke-width="2" />
-                    <line x1="400" y1="100" x2="400" y2="400" stroke="#0A2540" stroke-dasharray="5,5"
-                        stroke-width="2" />
-                </svg>
-
-                <div id="node-main" class="node" style="left: 105px; top: 205px;" onclick="inspectNode('Main Server')">
-                    <span>Main</span>
-                    <span class="node-label">Root Node</span>
+            <div class="graph-scroll">
+                <div class="graph-area" id="graph-area">
+                    <svg class="network-lines"></svg>
+                    <div id="robot-finder" class="finder" title="Mini-Crane wheeled Robot">🏗️</div>
+                    <div id="human-finder" class="finder" title="Human Operator Assistance">👨‍🔧</div>
                 </div>
-                <div id="node-cpu" class="node" style="left: 355px; top: 55px;" onclick="inspectNode('CPU Cluster')">
-                    <span>CPU</span>
-                    <span class="node-label">Compute</span>
-                </div>
-                <div id="node-gpu" class="node" style="left: 355px; top: 355px;" onclick="inspectNode('GPU Array')">
-                    <span>GPU</span>
-                    <span class="node-label">Processing</span>
-                </div>
-                <div id="node-storage" class="node" style="left: 605px; top: 205px;" onclick="inspectNode('Storage')">
-                    <span>Storage</span>
-                    <span class="node-label">Database</span>
-                </div>
-
-                <div id="robot-finder" class="finder" title="Mini-Crane wheeled Robot">🏗️</div>
-                <div id="human-finder" class="finder" title="Human Operator Assistance">👨‍🔧</div>
             </div>
 
             <div class="legend">
@@ -299,35 +375,173 @@
                     <div class="legend-color" style="background: var(--navy-primary);"></div> Connected Node
                 </div>
                 <div class="legend-item">
-                    <div class="legend-color" style="background: var(--error-red);"></div> Critical Hardware Error
+                    <div class="legend-color" style="background: var(--error-red);"></div> Critical Error
                 </div>
                 <div class="legend-item">
-                    <div class="legend-color" style="background: var(--navy-light);"></div> 🏗️ Crane Robot
+                    <div class="legend-color" style="background: #FFFFFF; border: 2px solid var(--navy-primary);"></div> Hidden Fault
                 </div>
                 <div class="legend-item">
-                    <div class="legend-color" style="background: #F59E0B;"></div> 👨‍🔧 Human Finder
+                    <div class="legend-color" style="background: var(--navy-light);"></div> 🏗️ Robot Shortest Path
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: var(--human-amber);"></div> 👨‍🔧 Human Search Path
                 </div>
             </div>
         </section>
     </main>
 
     <script>
-        // Core Node Configurations
-        const nodes = {
-            main: { id: 'node-main', x: 150, y: 250, name: 'Main Server' },
-            cpu: { id: 'node-cpu', x: 400, y: 100, name: 'CPU Cluster' },
-            gpu: { id: 'node-gpu', x: 400, y: 400, name: 'GPU Array' },
-            storage: { id: 'node-storage', x: 650, y: 250, name: 'Storage Disk' }
-        };
+        // ---------------------------------------------------------------
+        // Graph definition: up to 8 nodes, weighted edges
+        // ---------------------------------------------------------------
+        const NODE_DEFS = [
+            { key: 'main',    short: 'Main',  sub: 'Root Node',    name: 'Main Server',   x: 70,  y: 310 },
+            { key: 'cpu',     short: 'CPU',   sub: 'Compute',      name: 'CPU Cluster',   x: 260, y: 130 },
+            { key: 'gpu',     short: 'GPU',   sub: 'Processing',   name: 'GPU Array',     x: 260, y: 490 },
+            { key: 'mem',     short: 'MEM',   sub: 'RAM Modules',  name: 'Memory Bank',   x: 460, y: 60  },
+            { key: 'net',     short: 'NET',   sub: 'Switching',    name: 'Network Hub',   x: 460, y: 560 },
+            { key: 'storage', short: 'STG',   sub: 'Database',     name: 'Storage Disk',  x: 660, y: 150 },
+            { key: 'power',   short: 'PWR',   sub: 'PSU Array',    name: 'Power Unit',    x: 660, y: 470 },
+            { key: 'cool',    short: 'COOL',  sub: 'Thermal',      name: 'Cooling System', x: 900, y: 310 },
+        ];
 
+        const EDGE_DEFS = [
+            ['main', 'cpu', 4], ['main', 'gpu', 5],
+            ['cpu', 'mem', 3], ['gpu', 'net', 3], ['cpu', 'gpu', 6],
+            ['mem', 'storage', 4], ['net', 'power', 4], ['mem', 'net', 8],
+            ['storage', 'cool', 3], ['power', 'cool', 3], ['storage', 'power', 7],
+            ['cpu', 'storage', 10], ['gpu', 'power', 9],
+        ];
+
+        const nodes = {};
+        NODE_DEFS.forEach(n => { n.id = `node-${n.key}`; nodes[n.key] = n; });
+
+        const adjacency = {};
+        NODE_DEFS.forEach(n => { adjacency[n.key] = []; });
+        EDGE_DEFS.forEach(([a, b, w]) => {
+            adjacency[a].push({ to: b, weight: w });
+            adjacency[b].push({ to: a, weight: w });
+        });
+
+        const edgeElements = {};
+
+        // ---------------------------------------------------------------
+        // Dijkstra's algorithm
+        // ---------------------------------------------------------------
+        function dijkstra(source) {
+            const dist = {}, prev = {}, visited = new Set();
+            Object.keys(adjacency).forEach(k => { dist[k] = Infinity; });
+            dist[source] = 0;
+            const queue = [[0, source]];
+
+            while (queue.length) {
+                queue.sort((a, b) => a[0] - b[0]);
+                const [d, u] = queue.shift();
+                if (visited.has(u)) continue;
+                visited.add(u);
+
+                adjacency[u].forEach(({ to, weight }) => {
+                    const nd = d + weight;
+                    if (nd < dist[to]) {
+                        dist[to] = nd;
+                        prev[to] = u;
+                        queue.push([nd, to]);
+                    }
+                });
+            }
+            return { dist, prev };
+        }
+
+        function getPath(prev, source, target) {
+            if (source === target) return [source];
+            const path = [target];
+            let cur = target;
+            while (cur !== source) {
+                cur = prev[cur];
+                if (cur === undefined) return null;
+                path.unshift(cur);
+            }
+            return path;
+        }
+
+        // ---------------------------------------------------------------
+        // DOM / rendering
+        // ---------------------------------------------------------------
         const robot = document.getElementById('robot-finder');
         const human = document.getElementById('human-finder');
         const logOutput = document.getElementById('log-output');
+        const graphArea = document.getElementById('graph-area');
 
-        // Initialize positions
+        let robotPos = 'main';
+        let humanPos = 'main';
+        let runToken = 0;
+
+        function buildGraph() {
+            const svg = document.querySelector('.network-lines');
+            svg.innerHTML = '';
+            graphArea.querySelectorAll('.node').forEach(n => n.remove());
+
+            EDGE_DEFS.forEach(([a, b, w]) => {
+                const na = nodes[a], nb = nodes[b];
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', na.x);
+                line.setAttribute('y1', na.y);
+                line.setAttribute('x2', nb.x);
+                line.setAttribute('y2', nb.y);
+                line.setAttribute('class', 'edge-line');
+                svg.appendChild(line);
+                edgeElements[`${a}|${b}`] = line;
+                edgeElements[`${b}|${a}`] = line;
+
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', (na.x + nb.x) / 2);
+                text.setAttribute('y', (na.y + nb.y) / 2 - 4);
+                text.setAttribute('class', 'edge-weight');
+                text.textContent = w;
+                svg.appendChild(text);
+            });
+
+            NODE_DEFS.forEach(n => {
+                const div = document.createElement('div');
+                div.className = 'node';
+                div.id = n.id;
+                div.style.left = `${n.x - 40}px`;
+                div.style.top = `${n.y - 40}px`;
+                div.onclick = () => inspectNode(n.name);
+                div.innerHTML = `<span>${n.short}</span><span class="node-label">${n.sub}</span>`;
+                graphArea.appendChild(div);
+            });
+
+            document.getElementById('edge-count').textContent = EDGE_DEFS.length;
+        }
+
         function moveActor(actor, x, y) {
             actor.style.left = `${x}px`;
             actor.style.top = `${y}px`;
+        }
+
+        function resetToHome() {
+            robot.style.transitionDuration = '';
+            human.style.transitionDuration = '';
+            moveActor(robot, nodes.main.x, nodes.main.y);
+            moveActor(human, nodes.main.x, nodes.main.y);
+        }
+
+        function setEdgeActive(a, b, cls, on) {
+            const el = edgeElements[`${a}|${b}`];
+            if (el) el.classList.toggle(cls, on);
+        }
+
+        function clearPathHighlight() {
+            Object.values(edgeElements).forEach(el => el.classList.remove('path-robot', 'path-human'));
+        }
+
+        function resetGraphVisual() {
+            document.querySelectorAll('.node').forEach(n => {
+                n.classList.remove('error', 'hidden-error', 'fixed-flash');
+            });
+            clearPathHighlight();
+            human.style.display = 'none';
         }
 
         function log(message) {
@@ -335,105 +549,245 @@
             logOutput.innerHTML = `[${timestamp}] ${message}<br>` + logOutput.innerHTML;
         }
 
-        function clearNodeStates() {
-            document.querySelectorAll('.node').forEach(n => {
-                n.classList.remove('error', 'hidden-error');
-            });
-            human.style.display = 'none';
-        }
-
-        function resetToHome() {
-            moveActor(robot, nodes.main.x, nodes.main.y);
-            moveActor(human, nodes.main.x, nodes.main.y);
-        }
-
         function inspectNode(name) {
             log(`User manual click: Inspecting performance metrics for ${name}.`);
         }
 
-        // Run scenarios
-        function triggerScenario(type, btnElement) {
-            // Update UI buttons
+        function setButtonsDisabled(disabled) {
+            document.querySelectorAll('.scenario-btn').forEach(btn => { btn.disabled = disabled; });
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function randInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function pickErrorNodes(count) {
+            const pool = NODE_DEFS.filter(n => n.key !== 'main').map(n => n.key);
+            const picked = [];
+            while (picked.length < count && pool.length) {
+                picked.push(pool.splice(randInt(0, pool.length - 1), 1)[0]);
+            }
+            return picked;
+        }
+
+        // Animate an actor hop-by-hop along a Dijkstra-computed path,
+        // highlighting each traversed edge as it goes.
+        async function moveAlongPath(actor, path, token, pathClass) {
+            for (let i = 1; i < path.length; i++) {
+                if (token !== runToken) return false;
+                const fromKey = path[i - 1];
+                const toKey = path[i];
+                const edge = adjacency[fromKey].find(e => e.to === toKey);
+                const weight = edge ? edge.weight : 1;
+                const duration = 400 + weight * 120;
+
+                actor.style.transitionDuration = `${duration}ms`;
+                setEdgeActive(fromKey, toKey, pathClass, true);
+                moveActor(actor, nodes[toKey].x, nodes[toKey].y);
+                await delay(duration + 100);
+            }
+            actor.style.transitionDuration = '';
+            return token === runToken;
+        }
+
+        // ---------------------------------------------------------------
+        // Scenario B: Robot Auto-Fix — all faults visible, robot repeatedly
+        // recomputes Dijkstra from its current position to the nearest
+        // remaining fault.
+        // ---------------------------------------------------------------
+        async function runScenarioB(token) {
+            const errorKeys = pickErrorNodes(randInt(2, 3));
+            errorKeys.forEach(k => document.getElementById(nodes[k].id).classList.add('error'));
+            log(`⚠️ ALERT: ${errorKeys.length} critical hardware fault(s) detected at ${errorKeys.map(k => nodes[k].name).join(', ')}.`);
+            log('🧮 Robot sensors online — running Dijkstra shortest-path search across the network graph.');
+
+            const remaining = [...errorKeys];
+            while (remaining.length) {
+                if (token !== runToken) return;
+                const { dist, prev } = dijkstra(robotPos);
+                remaining.sort((a, b) => dist[a] - dist[b]);
+                const target = remaining.shift();
+                const path = getPath(prev, robotPos, target);
+
+                log(`🧮 Shortest path ${nodes[robotPos].name} → ${nodes[target].name}: ${path.map(k => nodes[k].short).join(' → ')} (cost ${dist[target]})`);
+                log(`🏗️ Crane Robot en route to ${nodes[target].name}...`);
+
+                const ok = await moveAlongPath(robot, path, token, 'path-robot');
+                if (!ok) return;
+                robotPos = target;
+
+                log(`🔧 Robot arrived at ${nodes[target].name}. Deploying mini-crane hoist for repair.`);
+                await delay(500);
+                if (token !== runToken) return;
+
+                const el = document.getElementById(nodes[target].id);
+                el.classList.remove('error');
+                el.classList.add('fixed-flash');
+                setTimeout(() => el.classList.remove('fixed-flash'), 1000);
+                log(`✅ ${nodes[target].name} restored to operational status.`);
+                clearPathHighlight();
+            }
+
+            if (token !== runToken) return;
+            if (robotPos !== 'main') {
+                const { prev } = dijkstra(robotPos);
+                const homePath = getPath(prev, robotPos, 'main');
+                log('🏗️ All faults resolved. Returning to Base via shortest route...');
+                const ok = await moveAlongPath(robot, homePath, token, 'path-robot');
+                if (ok) robotPos = 'main';
+                clearPathHighlight();
+            }
+            if (token === runToken) log('✅ System fully operational. Robot idling at Main Node.');
+        }
+
+        // ---------------------------------------------------------------
+        // Scenario C: Human Assist — faults hidden from robot sensors.
+        // Human searches nodes in Dijkstra-distance order from Main,
+        // flagging faults as found; robot concurrently pathfinds to
+        // whatever has been flagged so far.
+        // ---------------------------------------------------------------
+        async function runScenarioC(token) {
+            human.style.display = 'flex';
+            const errorKeys = pickErrorNodes(randInt(2, 3));
+            errorKeys.forEach(k => document.getElementById(nodes[k].id).classList.add('hidden-error'));
+            log('👤 Anomaly signature detected, but exact fault location is invisible to robot sensors.');
+            log('🧮 Dispatching Human Operator — inspection order computed via Dijkstra distance from Main Node.');
+
+            const { dist: distFromMain } = dijkstra('main');
+            const searchOrder = NODE_DEFS.map(n => n.key)
+                .filter(k => k !== 'main')
+                .sort((a, b) => distFromMain[a] - distFromMain[b]);
+
+            const pending = [];
+            let humanSearching = true;
+            let foundCount = 0;
+
+            async function humanLoop() {
+                for (const key of searchOrder) {
+                    if (token !== runToken) return;
+                    if (foundCount >= errorKeys.length) break;
+
+                    const { prev } = dijkstra(humanPos);
+                    const path = getPath(prev, humanPos, key);
+                    if (path && path.length > 1) {
+                        const ok = await moveAlongPath(human, path, token, 'path-human');
+                        if (!ok) return;
+                    }
+                    humanPos = key;
+                    if (token !== runToken) return;
+
+                    if (errorKeys.includes(key)) {
+                        foundCount++;
+                        const el = document.getElementById(nodes[key].id);
+                        el.classList.remove('hidden-error');
+                        el.classList.add('error');
+                        log(`🔍 Human located hidden fault at ${nodes[key].name}! Radioing coordinates to Crane Robot.`);
+                        pending.push(key);
+                    } else {
+                        log(`🚶 ${nodes[key].name} inspected — structurally sound, no fault found.`);
+                    }
+                    clearPathHighlight();
+                    await delay(200);
+                }
+                humanSearching = false;
+            }
+
+            async function robotLoop() {
+                while (true) {
+                    if (token !== runToken) return;
+                    if (pending.length === 0) {
+                        if (!humanSearching) return;
+                        await delay(150);
+                        continue;
+                    }
+                    const { dist, prev } = dijkstra(robotPos);
+                    pending.sort((a, b) => dist[a] - dist[b]);
+                    const target = pending.shift();
+                    const path = getPath(prev, robotPos, target);
+
+                    log(`🧮 Robot computing shortest path to ${nodes[target].name}: ${path.map(k => nodes[k].short).join(' → ')} (cost ${dist[target]})`);
+                    log(`🏗️ Crane Robot moving to repair ${nodes[target].name} using human-verified coordinates.`);
+
+                    const ok = await moveAlongPath(robot, path, token, 'path-robot');
+                    if (!ok) return;
+                    robotPos = target;
+
+                    await delay(500);
+                    if (token !== runToken) return;
+
+                    const el = document.getElementById(nodes[target].id);
+                    el.classList.remove('error');
+                    el.classList.add('fixed-flash');
+                    setTimeout(() => el.classList.remove('fixed-flash'), 1000);
+                    log(`🔧 ${nodes[target].name} repaired and restored to service.`);
+                    clearPathHighlight();
+                }
+            }
+
+            await Promise.all([humanLoop(), robotLoop()]);
+            if (token !== runToken) return;
+
+            log('🏃 Search and repair complete. Sending team back to Base...');
+            const homeTasks = [];
+            if (robotPos !== 'main') {
+                const { prev } = dijkstra(robotPos);
+                const p = getPath(prev, robotPos, 'main');
+                homeTasks.push(moveAlongPath(robot, p, token, 'path-robot').then(ok => { if (ok) robotPos = 'main'; }));
+            }
+            if (humanPos !== 'main') {
+                const { prev } = dijkstra(humanPos);
+                const p = getPath(prev, humanPos, 'main');
+                homeTasks.push(moveAlongPath(human, p, token, 'path-human').then(ok => { if (ok) humanPos = 'main'; }));
+            }
+            await Promise.all(homeTasks);
+            if (token !== runToken) return;
+            clearPathHighlight();
+            human.style.display = 'none';
+            log('✅ Team returned to Base. All systems nominal.');
+        }
+
+        // ---------------------------------------------------------------
+        // Scenario dispatch
+        // ---------------------------------------------------------------
+        async function triggerScenario(type, btnElement) {
             document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
 
-            clearNodeStates();
+            runToken++;
+            const token = runToken;
+
+            resetGraphVisual();
             resetToHome();
+            robotPos = 'main';
+            humanPos = 'main';
 
-            if (type === 'A') {
-                log("Scenario A triggered: System fully healthy. Robot crane is idling at Main Node.");
-            }
-
-            else if (type === 'B') {
-                log("Scenario B triggered: Error registered in server components.");
-
-                // Set errors on CPU and GPU
-                const cpuNode = document.getElementById('node-cpu');
-                const gpuNode = document.getElementById('node-gpu');
-                cpuNode.classList.add('error');
-                gpuNode.classList.add('error');
-
-                log("⚠️ ALERT: CPU Cluster overheating. GPU Array voltage instability detected.");
-
-                // Phase 1: Move to CPU
-                setTimeout(() => {
-                    log("🏗️ Crane Robot dispatched to CPU Cluster...");
-                    moveActor(robot, nodes.cpu.x, nodes.cpu.y);
-                }, 1000);
-
-                // Phase 2: Fix CPU, Move to GPU
-                setTimeout(() => {
-                    log("🔧 Robot arrived at CPU. Activating mini-crane hoist mechanism. CPU component replaced.");
-                    cpuNode.classList.remove('error');
-
-                    log("🏗️ Crane Robot rerouting to GPU Array...");
-                    moveActor(robot, nodes.gpu.x, nodes.gpu.y);
-                }, 3000);
-
-                // Phase 3: Fix GPU, return
-                setTimeout(() => {
-                    log("🔧 Robot arrived at GPU. Recalibrating physical power rails. GPU operational.");
-                    gpuNode.classList.remove('error');
-                    log("✅ All hardware components secured. Returning to Base.");
-                    moveActor(robot, nodes.main.x, nodes.main.y);
-                }, 5500);
-            }
-
-            else if (type === 'C') {
-                log("Scenario C triggered: Anomaly present. Robot sensors blind to hardware failure location.");
-
-                const storageNode = document.getElementById('node-storage');
-                // Target node has a hidden error (looks normal)
-                storageNode.classList.add('hidden-error');
-
-                human.style.display = 'flex';
-                log("👤 Human operator dispatched alongside Robot to identify physical server structural damage.");
-
-                setTimeout(() => {
-                    log("🏃‍♂️ Dual team moving through the server architecture topology...");
-                    moveActor(robot, nodes.storage.x, nodes.storage.y);
-                    moveActor(human, nodes.storage.x, nodes.storage.y);
-                }, 1200);
-
-                setTimeout(() => {
-                    log("🔍 Human arrived at Storage Node and flagged structural visual failure.");
-                    // Reveal error once human arrives
-                    storageNode.classList.remove('hidden-error');
-                    storageNode.classList.add('error');
-                    log("⚠️ Hidden Anomaly Revealed: Storage Controller Board physical interface broken.");
-                }, 3000);
-
-                setTimeout(() => {
-                    log("🔧 Mini-crane robot deployed using structural human coordinates to mount storage rack.");
-                    storageNode.classList.remove('error');
-                    log("✅ Storage array restored. Dynamic testing successful.");
-                }, 5000);
+            setButtonsDisabled(true);
+            try {
+                if (type === 'A') {
+                    log('Scenario A triggered: Network fully healthy. All 8 nodes nominal. Crane robot idling at Main Node.');
+                } else if (type === 'B') {
+                    log('Scenario B triggered: injecting random multi-node fault set.');
+                    await runScenarioB(token);
+                } else if (type === 'C') {
+                    log('Scenario C triggered: injecting random hidden multi-node fault set.');
+                    await runScenarioC(token);
+                }
+            } finally {
+                if (token === runToken) setButtonsDisabled(false);
             }
         }
 
-        // Inital setup execution
+        // ---------------------------------------------------------------
+        // Initial setup
+        // ---------------------------------------------------------------
         window.onload = () => {
+            buildGraph();
             resetToHome();
+            log('System initialized. 8-node network topology loaded. Dijkstra pathfinding engine ready.');
         };
     </script>
 </body>
