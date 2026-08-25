@@ -267,6 +267,33 @@
             color: #64748B;
         }
 
+        .node.dock {
+            border-color: var(--navy-light);
+            background-color: #EFF6FF;
+        }
+
+        .node.dock .node-label {
+            color: var(--navy-light);
+            font-weight: bold;
+        }
+
+        .node.fault-label .node-label {
+            color: var(--error-red);
+            font-weight: bold;
+        }
+
+        .rack-label {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: #94A3B8;
+            text-transform: uppercase;
+            pointer-events: none;
+            z-index: 1;
+        }
+
         /* Actors / Finders */
         .finder {
             position: absolute;
@@ -330,7 +357,7 @@
 
     <header>
         <h1>Corvin</h1>
-        <p>Delta Competition Framework • Mobile Mini-Crane Node Tracking System — Dijkstra Pathfinding Engine</p>
+        <p>Delta Competition Framework • Mobile Mini-Crane Server Rack Maintenance System — Dijkstra Pathfinding Engine</p>
     </header>
 
     <main>
@@ -344,15 +371,15 @@
 
             <button class="scenario-btn active" onclick="triggerScenario('A', this)">
                 Scenario A: Idle / Healthy
-                <span class="btn-desc">No faults. Robot idles at Main Node.</span>
+                <span class="btn-desc">No faults. Robot idles at the Dock.</span>
             </button>
             <button class="scenario-btn" onclick="triggerScenario('B', this)">
                 Scenario B: Robot Auto-Fix
-                <span class="btn-desc">Random multi-node fault. Robot runs Dijkstra to reach and repair each one.</span>
+                <span class="btn-desc">Random servers report a component fault. Robot runs Dijkstra to reach and swap each one.</span>
             </button>
             <button class="scenario-btn" onclick="triggerScenario('C', this)">
                 Scenario C: Human Assist
-                <span class="btn-desc">Hidden faults invisible to sensors. Human locates, robot pathfinds to fix.</span>
+                <span class="btn-desc">Component faults invisible to sensors. Human locates, robot pathfinds to fix.</span>
             </button>
 
             <div class="status-box">
@@ -372,13 +399,13 @@
 
             <div class="legend">
                 <div class="legend-item">
-                    <div class="legend-color" style="background: var(--navy-primary);"></div> Connected Node
+                    <div class="legend-color" style="background: var(--navy-primary);"></div> Server
                 </div>
                 <div class="legend-item">
-                    <div class="legend-color" style="background: var(--error-red);"></div> Critical Error
+                    <div class="legend-color" style="background: var(--error-red);"></div> Component Fault
                 </div>
                 <div class="legend-item">
-                    <div class="legend-color" style="background: #FFFFFF; border: 2px solid var(--navy-primary);"></div> Hidden Fault
+                    <div class="legend-color" style="background: #FFFFFF; border: 2px solid var(--navy-primary);"></div> Hidden Component Fault
                 </div>
                 <div class="legend-item">
                     <div class="legend-color" style="background: var(--navy-light);"></div> 🏗️ Robot Shortest Path
@@ -392,26 +419,47 @@
 
     <script>
         // ---------------------------------------------------------------
-        // Graph definition: up to 8 nodes, weighted edges
+        // Graph definition: up to 8 nodes, laid out like a server rack /
+        // library stacks — a robot dock at the aisle entrance, two rows
+        // of server bays on either side of the aisle.
         // ---------------------------------------------------------------
         const NODE_DEFS = [
-            { key: 'main',    short: 'Main',  sub: 'Root Node',    name: 'Main Server',   x: 70,  y: 310 },
-            { key: 'cpu',     short: 'CPU',   sub: 'Compute',      name: 'CPU Cluster',   x: 260, y: 130 },
-            { key: 'gpu',     short: 'GPU',   sub: 'Processing',   name: 'GPU Array',     x: 260, y: 490 },
-            { key: 'mem',     short: 'MEM',   sub: 'RAM Modules',  name: 'Memory Bank',   x: 460, y: 60  },
-            { key: 'net',     short: 'NET',   sub: 'Switching',    name: 'Network Hub',   x: 460, y: 560 },
-            { key: 'storage', short: 'STG',   sub: 'Database',     name: 'Storage Disk',  x: 660, y: 150 },
-            { key: 'power',   short: 'PWR',   sub: 'PSU Array',    name: 'Power Unit',    x: 660, y: 470 },
-            { key: 'cool',    short: 'COOL',  sub: 'Thermal',      name: 'Cooling System', x: 900, y: 310 },
+            { key: 'main', short: 'DOCK',  sub: 'Robot Base',  name: 'Robot Dock', x: 490, y: 580, isDock: true },
+            { key: 'srv1', short: 'SRV-1', sub: 'Rack A · U1', name: 'Server 1',   x: 200, y: 100 },
+            { key: 'srv2', short: 'SRV-2', sub: 'Rack A · U2', name: 'Server 2',   x: 200, y: 260 },
+            { key: 'srv3', short: 'SRV-3', sub: 'Rack A · U3', name: 'Server 3',   x: 200, y: 420 },
+            { key: 'srv4', short: 'SRV-4', sub: 'Rack A · U4', name: 'Server 4',   x: 200, y: 580 },
+            { key: 'srv5', short: 'SRV-5', sub: 'Rack B · U1', name: 'Server 5',   x: 780, y: 100 },
+            { key: 'srv6', short: 'SRV-6', sub: 'Rack B · U2', name: 'Server 6',   x: 780, y: 260 },
+            { key: 'srv7', short: 'SRV-7', sub: 'Rack B · U3', name: 'Server 7',   x: 780, y: 420 },
         ];
 
         const EDGE_DEFS = [
-            ['main', 'cpu', 4], ['main', 'gpu', 5],
-            ['cpu', 'mem', 3], ['gpu', 'net', 3], ['cpu', 'gpu', 6],
-            ['mem', 'storage', 4], ['net', 'power', 4], ['mem', 'net', 8],
-            ['storage', 'cool', 3], ['power', 'cool', 3], ['storage', 'power', 7],
-            ['cpu', 'storage', 10], ['gpu', 'power', 9],
+            ['main', 'srv4', 4], ['main', 'srv7', 6],
+            ['srv1', 'srv2', 3], ['srv2', 'srv3', 3], ['srv3', 'srv4', 3],
+            ['srv5', 'srv6', 3], ['srv6', 'srv7', 3],
+            ['srv1', 'srv5', 5], ['srv2', 'srv6', 5], ['srv3', 'srv7', 5],
         ];
+
+        // Every server is built from these components. When a server
+        // reports a fault, exactly one of its components is the cause —
+        // the node represents the server, not the component.
+        const COMPONENTS = [
+            { key: 'cpu',  name: 'CPU Module' },
+            { key: 'gpu',  name: 'GPU Module' },
+            { key: 'ram',  name: 'RAM Bank' },
+            { key: 'psu',  name: 'PSU' },
+            { key: 'nic',  name: 'NIC / Network Card' },
+            { key: 'disk', name: 'Storage Disk' },
+            { key: 'fan',  name: 'Cooling Fan' },
+        ];
+
+        function pickComponent() {
+            return COMPONENTS[randInt(0, COMPONENTS.length - 1)];
+        }
+
+        // key -> the COMPONENTS entry currently at fault on that server
+        const serverFaults = {};
 
         const nodes = {};
         NODE_DEFS.forEach(n => { n.id = `node-${n.key}`; nodes[n.key] = n; });
@@ -503,12 +551,33 @@
 
             NODE_DEFS.forEach(n => {
                 const div = document.createElement('div');
-                div.className = 'node';
+                div.className = 'node' + (n.isDock ? ' dock' : '');
                 div.id = n.id;
                 div.style.left = `${n.x - 40}px`;
                 div.style.top = `${n.y - 40}px`;
                 div.onclick = () => inspectNode(n.name);
-                div.innerHTML = `<span>${n.short}</span><span class="node-label">${n.sub}</span>`;
+                div.innerHTML = `<span>${n.short}</span><span class="node-label" id="sub-${n.key}">${n.sub}</span>`;
+                graphArea.appendChild(div);
+            });
+
+            // Rack / aisle labels, so the layout reads as a server row
+            // rather than an abstract graph.
+            ['rack-a-label', 'rack-b-label', 'aisle-label'].forEach(id => {
+                const old = document.getElementById(id);
+                if (old) old.remove();
+            });
+            const rackLabels = [
+                { id: 'rack-a-label', text: 'RACK A', x: 200, y: 30 },
+                { id: 'rack-b-label', text: 'RACK B', x: 780, y: 30 },
+                { id: 'aisle-label', text: 'AISLE', x: 490, y: 340 },
+            ];
+            rackLabels.forEach(l => {
+                const div = document.createElement('div');
+                div.id = l.id;
+                div.className = 'rack-label';
+                div.style.left = `${l.x}px`;
+                div.style.top = `${l.y}px`;
+                div.textContent = l.text;
                 graphArea.appendChild(div);
             });
 
@@ -538,10 +607,30 @@
 
         function resetGraphVisual() {
             document.querySelectorAll('.node').forEach(n => {
-                n.classList.remove('error', 'hidden-error', 'fixed-flash');
+                n.classList.remove('error', 'hidden-error', 'fixed-flash', 'fault-label');
             });
+            Object.keys(serverFaults).forEach(k => restoreServerLabel(k));
+            for (const k in serverFaults) delete serverFaults[k];
             clearPathHighlight();
             human.style.display = 'none';
+        }
+
+        // Swap a server's sub-label to show the specific failed component
+        // (used instead of an abstract "error" state, since the node is a
+        // whole server and the fault is one part inside it).
+        function setServerFaultLabel(key, component) {
+            serverFaults[key] = component;
+            const sub = document.getElementById(`sub-${key}`);
+            if (sub) sub.textContent = `⚠ ${component.name}`;
+            document.getElementById(nodes[key].id).classList.add('fault-label');
+        }
+
+        function restoreServerLabel(key) {
+            const sub = document.getElementById(`sub-${key}`);
+            if (sub) sub.textContent = nodes[key].sub;
+            const el = document.getElementById(nodes[key].id);
+            if (el) el.classList.remove('fault-label');
+            delete serverFaults[key];
         }
 
         function log(message) {
@@ -601,9 +690,12 @@
         // ---------------------------------------------------------------
         async function runScenarioB(token) {
             const errorKeys = pickErrorNodes(randInt(2, 3));
-            errorKeys.forEach(k => document.getElementById(nodes[k].id).classList.add('error'));
-            log(`⚠️ ALERT: ${errorKeys.length} critical hardware fault(s) detected at ${errorKeys.map(k => nodes[k].name).join(', ')}.`);
-            log('🧮 Robot sensors online — running Dijkstra shortest-path search across the network graph.');
+            errorKeys.forEach(k => {
+                document.getElementById(nodes[k].id).classList.add('error');
+                setServerFaultLabel(k, pickComponent());
+            });
+            log(`⚠️ ALERT: ${errorKeys.length} server(s) reporting a component fault — ${errorKeys.map(k => `${nodes[k].name} (${serverFaults[k].name})`).join(', ')}.`);
+            log('🧮 Robot sensors online — running Dijkstra shortest-path search across the rack layout.');
 
             const remaining = [...errorKeys];
             while (remaining.length) {
@@ -620,7 +712,9 @@
                 if (!ok) return;
                 robotPos = target;
 
-                log(`🔧 Robot arrived at ${nodes[target].name}. Deploying mini-crane hoist for repair.`);
+                const faultyComponent = serverFaults[target];
+                log(`📡 Robot arrived at ${nodes[target].name}. Scanning ArUco marker board — slot position confirmed.`);
+                log(`🔧 Deploying mini-crane hoist — swapping ${faultyComponent.name}.`);
                 await delay(500);
                 if (token !== runToken) return;
 
@@ -628,7 +722,8 @@
                 el.classList.remove('error');
                 el.classList.add('fixed-flash');
                 setTimeout(() => el.classList.remove('fixed-flash'), 1000);
-                log(`✅ ${nodes[target].name} restored to operational status.`);
+                log(`✅ ${nodes[target].name} — ${faultyComponent.name} replaced. Server restored to operational status.`);
+                restoreServerLabel(target);
                 clearPathHighlight();
             }
 
@@ -636,12 +731,12 @@
             if (robotPos !== 'main') {
                 const { prev } = dijkstra(robotPos);
                 const homePath = getPath(prev, robotPos, 'main');
-                log('🏗️ All faults resolved. Returning to Base via shortest route...');
+                log('🏗️ All component faults resolved. Returning to Dock via shortest route...');
                 const ok = await moveAlongPath(robot, homePath, token, 'path-robot');
                 if (ok) robotPos = 'main';
                 clearPathHighlight();
             }
-            if (token === runToken) log('✅ System fully operational. Robot idling at Main Node.');
+            if (token === runToken) log('✅ All servers operational. Robot idling at Dock.');
         }
 
         // ---------------------------------------------------------------
@@ -653,9 +748,12 @@
         async function runScenarioC(token) {
             human.style.display = 'flex';
             const errorKeys = pickErrorNodes(randInt(2, 3));
-            errorKeys.forEach(k => document.getElementById(nodes[k].id).classList.add('hidden-error'));
-            log('👤 Anomaly signature detected, but exact fault location is invisible to robot sensors.');
-            log('🧮 Dispatching Human Operator — inspection order computed via Dijkstra distance from Main Node.');
+            errorKeys.forEach(k => {
+                document.getElementById(nodes[k].id).classList.add('hidden-error');
+                serverFaults[k] = pickComponent();
+            });
+            log('👤 Anomaly signature detected, but exact server/component is invisible to robot sensors.');
+            log('🧮 Dispatching Human Operator — inspection order computed via Dijkstra distance from the Dock.');
 
             const { dist: distFromMain } = dijkstra('main');
             const searchOrder = NODE_DEFS.map(n => n.key)
@@ -685,10 +783,12 @@
                         const el = document.getElementById(nodes[key].id);
                         el.classList.remove('hidden-error');
                         el.classList.add('error');
-                        log(`🔍 Human located hidden fault at ${nodes[key].name}! Radioing coordinates to Crane Robot.`);
+                        log(`📡 Human scanned the ArUco marker board on ${nodes[key].name} — slot confirmed.`);
+                        setServerFaultLabel(key, serverFaults[key]);
+                        log(`🔍 Component fault confirmed: ${nodes[key].name} — ${serverFaults[key].name}. Radioing coordinates to Crane Robot.`);
                         pending.push(key);
                     } else {
-                        log(`🚶 ${nodes[key].name} inspected — structurally sound, no fault found.`);
+                        log(`🚶 ${nodes[key].name} inspected — ArUco marker board scanned, all components nominal.`);
                     }
                     clearPathHighlight();
                     await delay(200);
@@ -716,6 +816,7 @@
                     if (!ok) return;
                     robotPos = target;
 
+                    const faultyComponent = serverFaults[target];
                     await delay(500);
                     if (token !== runToken) return;
 
@@ -723,7 +824,8 @@
                     el.classList.remove('error');
                     el.classList.add('fixed-flash');
                     setTimeout(() => el.classList.remove('fixed-flash'), 1000);
-                    log(`🔧 ${nodes[target].name} repaired and restored to service.`);
+                    log(`🔧 ${nodes[target].name} — ${faultyComponent.name} replaced using human-verified coordinates. Server restored to service.`);
+                    restoreServerLabel(target);
                     clearPathHighlight();
                 }
             }
@@ -731,7 +833,7 @@
             await Promise.all([humanLoop(), robotLoop()]);
             if (token !== runToken) return;
 
-            log('🏃 Search and repair complete. Sending team back to Base...');
+            log('🏃 Search and repair complete. Sending team back to the Dock...');
             const homeTasks = [];
             if (robotPos !== 'main') {
                 const { prev } = dijkstra(robotPos);
@@ -747,7 +849,7 @@
             if (token !== runToken) return;
             clearPathHighlight();
             human.style.display = 'none';
-            log('✅ Team returned to Base. All systems nominal.');
+            log('✅ Team returned to Dock. All servers nominal.');
         }
 
         // ---------------------------------------------------------------
@@ -768,12 +870,12 @@
             setButtonsDisabled(true);
             try {
                 if (type === 'A') {
-                    log('Scenario A triggered: Network fully healthy. All 8 nodes nominal. Crane robot idling at Main Node.');
+                    log('Scenario A triggered: Rack fully healthy. All 7 servers nominal. Crane robot idling at the Dock.');
                 } else if (type === 'B') {
-                    log('Scenario B triggered: injecting random multi-node fault set.');
+                    log('Scenario B triggered: injecting random component fault(s) across the rack.');
                     await runScenarioB(token);
                 } else if (type === 'C') {
-                    log('Scenario C triggered: injecting random hidden multi-node fault set.');
+                    log('Scenario C triggered: injecting hidden component fault(s), invisible to sensors.');
                     await runScenarioC(token);
                 }
             } finally {
@@ -787,7 +889,7 @@
         window.onload = () => {
             buildGraph();
             resetToHome();
-            log('System initialized. 8-node network topology loaded. Dijkstra pathfinding engine ready.');
+            log('System initialized. Rack layout loaded — 2 server rows, 7 servers, 1 robot dock. Dijkstra pathfinding engine ready.');
         };
     </script>
 </body>
