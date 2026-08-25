@@ -54,10 +54,10 @@
         main {
             flex: 1;
             display: grid;
-            grid-template-columns: 320px 1fr;
+            grid-template-columns: 300px 1fr 300px;
             gap: 20px;
             padding: 20px;
-            max-width: 1600px;
+            max-width: 1900px;
             margin: 0 auto;
             width: 100%;
         }
@@ -282,6 +282,67 @@
             font-weight: bold;
         }
 
+        /* Camera capture detail — brief viewfinder + shutter flash shown
+           whenever the robot (or human) scans a node's ArUco board. */
+        .node.camera-scan {
+            box-shadow: 0 0 0 5px rgba(30, 58, 138, 0.35), 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .camera-frame {
+            position: absolute;
+            width: 96px;
+            height: 96px;
+            transform: translate(-48px, -48px);
+            pointer-events: none;
+            z-index: 25;
+            animation: cameraFrameFade 0.9s ease-out forwards;
+        }
+
+        .camera-frame span {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--navy-light);
+        }
+
+        .camera-frame .tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+        .camera-frame .tr { top: 0; right: 0; border-left: none; border-bottom: none; }
+        .camera-frame .bl { bottom: 0; left: 0; border-right: none; border-top: none; }
+        .camera-frame .br { bottom: 0; right: 0; border-left: none; border-top: none; }
+
+        @keyframes cameraFrameFade {
+            0%   { opacity: 0; transform: translate(-48px, -48px) scale(1.35); }
+            20%  { opacity: 1; transform: translate(-48px, -48px) scale(1); }
+            75%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .camera-badge {
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            transform: translate(-13px, -13px);
+            background: var(--navy-primary);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            z-index: 26;
+            pointer-events: none;
+            box-shadow: 0 0 0 3px var(--white), 0 2px 6px rgba(0, 0, 0, 0.35);
+            animation: cameraBadgePop 0.9s ease-out forwards;
+        }
+
+        @keyframes cameraBadgePop {
+            0%   { opacity: 0; transform: translate(-13px, -13px) scale(0.4); }
+            20%  { opacity: 1; transform: translate(-13px, -13px) scale(1.2); }
+            35%  { opacity: 1; transform: translate(-13px, -13px) scale(1); }
+            80%  { opacity: 1; }
+            100% { opacity: 0; transform: translate(-13px, -13px) scale(0.85); }
+        }
+
         .rack-label {
             position: absolute;
             transform: translate(-50%, -50%);
@@ -350,6 +411,154 @@
             border-radius: 4px;
             flex-shrink: 0;
         }
+
+        /* ---------------------------------------------------------- */
+        /* Camera POV sidebar                                         */
+        /* ---------------------------------------------------------- */
+        .camera-panel {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid var(--navy-primary);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .camera-panel h2 {
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--navy-primary);
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+
+        .camera-viewport {
+            position: relative;
+            background: #0B1220;
+            border-radius: 6px;
+            overflow: hidden;
+            aspect-ratio: 13 / 8;
+            border: 1px solid #1E293B;
+        }
+
+        .camera-hud-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 8px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.65), transparent);
+            font-family: 'Courier New', monospace;
+            font-size: 0.68rem;
+            color: #E2E8F0;
+            letter-spacing: 0.5px;
+            z-index: 5;
+        }
+
+        .rec-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #EF4444;
+            box-shadow: 0 0 4px #EF4444;
+            animation: recBlink 1.2s infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes recBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.25; }
+        }
+
+        #camera-actor-label {
+            flex: 1;
+            font-weight: bold;
+        }
+
+        .camera-scene {
+            position: absolute;
+            inset: 0;
+        }
+
+        .camera-scene svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .camera-corners span {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(148, 163, 184, 0.6);
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        .camera-corners .tl { top: 4px; left: 4px; border-right: none; border-bottom: none; }
+        .camera-corners .tr { top: 4px; right: 4px; border-left: none; border-bottom: none; }
+        .camera-corners .bl { bottom: 4px; left: 4px; border-right: none; border-top: none; }
+        .camera-corners .br { bottom: 4px; right: 4px; border-left: none; border-top: none; }
+
+        .camera-scanline {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 26px;
+            background: linear-gradient(to bottom, transparent, rgba(125, 211, 252, 0.18), transparent);
+            z-index: 3;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .camera-viewport.live .camera-scanline {
+            opacity: 1;
+            animation: scanSweep 2.4s linear infinite;
+        }
+
+        @keyframes scanSweep {
+            0% { transform: translateY(-26px); }
+            100% { transform: translateY(180px); }
+        }
+
+        .camera-hud-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 6px 8px;
+            background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+            font-family: 'Courier New', monospace;
+            font-size: 0.65rem;
+            color: #7DD3FC;
+            line-height: 1.5;
+            z-index: 5;
+        }
+
+        #camera-line-status {
+            color: #FCA5A5;
+        }
+
+        .camera-viewport:not(.fault) #camera-line-status {
+            color: #86EFAC;
+        }
+
+        .camera-caption {
+            font-size: 0.78rem;
+            color: #64748B;
+            line-height: 1.4;
+        }
+
+        .camera-legend {
+            font-size: 0.7rem;
+            color: #94A3B8;
+            border-top: 1px solid #E2E8F0;
+            padding-top: 10px;
+            line-height: 1.6;
+        }
     </style>
 </head>
 
@@ -415,6 +624,29 @@
                 </div>
             </div>
         </section>
+
+        <section class="camera-panel">
+            <h2>Camera POV</h2>
+            <div class="camera-viewport" id="camera-viewport">
+                <div class="camera-hud-top">
+                    <span class="rec-dot"></span>
+                    <span id="camera-actor-label">STANDBY</span>
+                    <span id="camera-clock"></span>
+                </div>
+                <div class="camera-scene" id="camera-scene"></div>
+                <div class="camera-corners">
+                    <span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span>
+                </div>
+                <div class="camera-scanline"></div>
+                <div class="camera-hud-bottom">
+                    <div id="camera-line-aruco">ArUco: —</div>
+                    <div id="camera-line-barcode">BARCODE: —</div>
+                    <div id="camera-line-status">STATUS: —</div>
+                </div>
+            </div>
+            <p class="camera-caption" id="camera-caption">Camera idle — no active feed.</p>
+            <p class="camera-legend">ArUco marker board → slot <b>position</b>. Barcode label → server <b>identity</b>. Synthetic feed, not a live camera.</p>
+        </section>
     </main>
 
     <script>
@@ -425,13 +657,13 @@
         // ---------------------------------------------------------------
         const NODE_DEFS = [
             { key: 'main', short: 'DOCK',  sub: 'Robot Base',  name: 'Robot Dock', x: 490, y: 580, isDock: true },
-            { key: 'srv1', short: 'SRV-1', sub: 'Rack A · U1', name: 'Server 1',   x: 200, y: 100 },
-            { key: 'srv2', short: 'SRV-2', sub: 'Rack A · U2', name: 'Server 2',   x: 200, y: 260 },
-            { key: 'srv3', short: 'SRV-3', sub: 'Rack A · U3', name: 'Server 3',   x: 200, y: 420 },
-            { key: 'srv4', short: 'SRV-4', sub: 'Rack A · U4', name: 'Server 4',   x: 200, y: 580 },
-            { key: 'srv5', short: 'SRV-5', sub: 'Rack B · U1', name: 'Server 5',   x: 780, y: 100 },
-            { key: 'srv6', short: 'SRV-6', sub: 'Rack B · U2', name: 'Server 6',   x: 780, y: 260 },
-            { key: 'srv7', short: 'SRV-7', sub: 'Rack B · U3', name: 'Server 7',   x: 780, y: 420 },
+            { key: 'srv1', short: 'SRV-1', sub: 'Rack A · U1', name: 'Server 1',   x: 200, y: 100, serial: 'SN-A1-7734' },
+            { key: 'srv2', short: 'SRV-2', sub: 'Rack A · U2', name: 'Server 2',   x: 200, y: 260, serial: 'SN-A2-8821' },
+            { key: 'srv3', short: 'SRV-3', sub: 'Rack A · U3', name: 'Server 3',   x: 200, y: 420, serial: 'SN-A3-9456' },
+            { key: 'srv4', short: 'SRV-4', sub: 'Rack A · U4', name: 'Server 4',   x: 200, y: 580, serial: 'SN-A4-0213' },
+            { key: 'srv5', short: 'SRV-5', sub: 'Rack B · U1', name: 'Server 5',   x: 780, y: 100, serial: 'SN-B1-5567' },
+            { key: 'srv6', short: 'SRV-6', sub: 'Rack B · U2', name: 'Server 6',   x: 780, y: 260, serial: 'SN-B2-6689' },
+            { key: 'srv7', short: 'SRV-7', sub: 'Rack B · U3', name: 'Server 7',   x: 780, y: 420, serial: 'SN-B3-7742' },
         ];
 
         const EDGE_DEFS = [
@@ -519,6 +751,14 @@
         const human = document.getElementById('human-finder');
         const logOutput = document.getElementById('log-output');
         const graphArea = document.getElementById('graph-area');
+
+        const cameraViewport = document.getElementById('camera-viewport');
+        const cameraScene = document.getElementById('camera-scene');
+        const cameraActorLabel = document.getElementById('camera-actor-label');
+        const cameraLineAruco = document.getElementById('camera-line-aruco');
+        const cameraLineBarcode = document.getElementById('camera-line-barcode');
+        const cameraLineStatus = document.getElementById('camera-line-status');
+        const cameraCaption = document.getElementById('camera-caption');
 
         let robotPos = 'main';
         let humanPos = 'main';
@@ -633,6 +873,192 @@
             delete serverFaults[key];
         }
 
+        // Small camera capture detail — a viewfinder frame + shutter badge
+        // over the node, shown whenever a camera scans its ArUco board.
+        function showCameraFlash(key) {
+            const n = nodes[key];
+            const el = document.getElementById(n.id);
+            if (el) el.classList.add('camera-scan');
+
+            const frame = document.createElement('div');
+            frame.className = 'camera-frame';
+            frame.style.left = `${n.x}px`;
+            frame.style.top = `${n.y}px`;
+            frame.innerHTML = '<span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span>';
+            graphArea.appendChild(frame);
+
+            const badge = document.createElement('div');
+            badge.className = 'camera-badge';
+            badge.textContent = '📷';
+            badge.style.left = `${n.x + 34}px`;
+            badge.style.top = `${n.y - 34}px`;
+            graphArea.appendChild(badge);
+
+            setTimeout(() => {
+                if (el) el.classList.remove('camera-scan');
+                frame.remove();
+                badge.remove();
+            }, 900);
+        }
+
+        // ---------------------------------------------------------------
+        // Camera POV sidebar — synthetic (illustrated, not photographic)
+        // stills for each situation: idle, in transit, arrived at a bay
+        // (fault or clear), mid-repair, verified. ArUco marker board and
+        // barcode label are drawn with a small deterministic hash so the
+        // same server always shows the same "fingerprint" pattern.
+        // ---------------------------------------------------------------
+        function hashStr(s) {
+            let h = 0;
+            for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+            return h;
+        }
+
+        function seededRandom(seed) {
+            let s = seed || 1;
+            return function () {
+                s = (s * 1103515245 + 12345) >>> 0;
+                return (s >>> 8) / 0xFFFFFF;
+            };
+        }
+
+        function barcodeBars(serial) {
+            const rnd = seededRandom(hashStr(serial));
+            const bars = [];
+            let total = 0;
+            while (total < 168) {
+                const w = 2 + Math.floor(rnd() * 6);
+                bars.push(w);
+                total += w + 2;
+            }
+            return bars;
+        }
+
+        function arucoGrid(seed) {
+            const rnd = seededRandom(hashStr(seed + '-aruco'));
+            const grid = [];
+            for (let r = 0; r < 5; r++) {
+                const row = [];
+                for (let c = 0; c < 5; c++) {
+                    row.push((r === 0 || r === 4 || c === 0 || c === 4) ? true : rnd() > 0.5);
+                }
+                grid.push(row);
+            }
+            return grid;
+        }
+
+        function sceneIdle() {
+            return `<svg viewBox="0 0 260 160" preserveAspectRatio="xMidYMid slice">
+                <rect width="260" height="160" fill="#0B1220"/>
+                <circle cx="130" cy="78" r="28" fill="none" stroke="#334155" stroke-width="3"/>
+                <circle cx="130" cy="78" r="11" fill="#334155"/>
+                <text x="130" y="130" text-anchor="middle" fill="#64748B" font-size="11" font-family="'Courier New',monospace" letter-spacing="3">STANDBY</text>
+            </svg>`;
+        }
+
+        function sceneTravel() {
+            let posts = '';
+            for (let i = 0; i < 7; i++) posts += `<rect x="${i * 42 - 16}" y="18" width="9" height="120" fill="#1E293B"/>`;
+            return `<svg viewBox="0 0 260 160" preserveAspectRatio="xMidYMid slice">
+                <rect width="260" height="160" fill="#0B1220"/>
+                <g opacity="0.85">${posts}</g>
+                <line x1="0" y1="140" x2="260" y2="140" stroke="#1E3A8A" stroke-width="3" stroke-dasharray="10 8"/>
+                <text x="130" y="150" text-anchor="middle" fill="#93C5FD" font-size="9" font-family="'Courier New',monospace" letter-spacing="1">RAIL TRACKING — ARUCO</text>
+            </svg>`;
+        }
+
+        function sceneBay({ shortName, serial, ledColor, faultText }) {
+            const bars = barcodeBars(serial);
+            let barcodeSvg = '';
+            let bx = 40;
+            bars.forEach(w => {
+                barcodeSvg += `<rect x="${bx}" y="120" width="${w}" height="24" fill="#0F172A"/>`;
+                bx += w + 2;
+            });
+
+            const grid = arucoGrid(shortName);
+            let arucoSvg = '';
+            const cell = 6;
+            grid.forEach((row, ry) => row.forEach((on, rx) => {
+                if (on) arucoSvg += `<rect x="${188 + rx * cell}" y="${18 + ry * cell}" width="${cell}" height="${cell}" fill="#0F172A"/>`;
+            }));
+
+            return `<svg viewBox="0 0 260 160" preserveAspectRatio="xMidYMid slice">
+                <rect width="260" height="160" fill="#111827"/>
+                <rect x="20" y="16" width="220" height="128" rx="4" fill="#1E293B" stroke="#334155" stroke-width="2"/>
+                <circle cx="36" cy="32" r="6" fill="${ledColor}"/>
+                <text x="130" y="72" text-anchor="middle" fill="#E2E8F0" font-size="20" font-weight="bold" font-family="'Courier New',monospace">${shortName}</text>
+                <text x="130" y="92" text-anchor="middle" fill="${faultText ? '#FCA5A5' : '#6EE7B7'}" font-size="9.5" font-family="'Courier New',monospace">${faultText || 'NOMINAL'}</text>
+                <rect x="186" y="16" width="34" height="34" fill="#F8FAFC"/>
+                ${arucoSvg}
+                <rect x="38" y="118" width="${bx - 38}" height="28" fill="#F8FAFC"/>
+                ${barcodeSvg}
+            </svg>`;
+        }
+
+        function setCameraIdle() {
+            cameraScene.innerHTML = sceneIdle();
+            cameraActorLabel.textContent = 'STANDBY';
+            cameraLineAruco.textContent = 'ArUco: —';
+            cameraLineBarcode.textContent = 'BARCODE: —';
+            cameraLineStatus.textContent = 'STATUS: —';
+            cameraCaption.textContent = 'Camera idle — no active feed.';
+            cameraViewport.classList.remove('live', 'fault');
+        }
+
+        function setCameraTravel(actor) {
+            cameraScene.innerHTML = sceneTravel();
+            cameraActorLabel.textContent = actor === 'human' ? '👨‍🔧 HUMAN CAM' : '🏗️ ROBOT CAM';
+            cameraLineAruco.textContent = 'ArUco: TRACKING RAIL MARKERS';
+            cameraLineBarcode.textContent = 'BARCODE: —';
+            cameraLineStatus.textContent = 'STATUS: IN TRANSIT';
+            cameraCaption.textContent = `${actor === 'human' ? 'Human operator' : 'Robot'} en route — coarse position via ArUco rail tracking.`;
+            cameraViewport.classList.add('live');
+            cameraViewport.classList.remove('fault');
+        }
+
+        function setCameraArrive(actor, key, opts = {}) {
+            const n = nodes[key];
+            const fault = opts.fault || null;
+            const ledColor = fault ? '#EF4444' : '#10B981';
+            cameraScene.innerHTML = sceneBay({
+                shortName: n.short, serial: n.serial, ledColor,
+                faultText: fault ? `FAULT: ${fault.name}` : null,
+            });
+            cameraActorLabel.textContent = actor === 'human' ? '👨‍🔧 HUMAN CAM' : '🏗️ ROBOT CAM';
+            cameraLineAruco.textContent = `ArUco: LOCKED — ${n.name} slot confirmed`;
+            cameraLineBarcode.textContent = `BARCODE: ${n.serial} DECODED`;
+            cameraLineStatus.textContent = fault ? `STATUS: FAULT — ${fault.name}` : 'STATUS: NOMINAL';
+            cameraCaption.textContent = fault
+                ? `${n.name} — component fault confirmed by camera.`
+                : `${n.name} — inspected, no fault found.`;
+            cameraViewport.classList.add('live');
+            cameraViewport.classList.toggle('fault', !!fault);
+        }
+
+        function setCameraRepair(key) {
+            const n = nodes[key];
+            const c = serverFaults[key];
+            cameraScene.innerHTML = sceneBay({
+                shortName: n.short, serial: n.serial, ledColor: '#F59E0B',
+                faultText: `SWAPPING: ${c ? c.name : '—'}`,
+            });
+            cameraLineStatus.textContent = `STATUS: REPAIRING — ${c ? c.name : ''}`;
+            cameraCaption.textContent = `Hoist engaged — swapping ${c ? c.name : 'component'} on ${n.name}.`;
+            cameraViewport.classList.add('live', 'fault');
+        }
+
+        function setCameraVerify(key) {
+            const n = nodes[key];
+            cameraScene.innerHTML = sceneBay({ shortName: n.short, serial: n.serial, ledColor: '#10B981', faultText: null });
+            cameraLineAruco.textContent = `ArUco: LOCKED — ${n.name} slot confirmed`;
+            cameraLineBarcode.textContent = `BARCODE: ${n.serial} DECODED`;
+            cameraLineStatus.textContent = 'STATUS: VERIFY PASS';
+            cameraCaption.textContent = `${n.name} restored — component swap verified.`;
+            cameraViewport.classList.add('live');
+            cameraViewport.classList.remove('fault');
+        }
+
         function log(message) {
             const timestamp = new Date().toLocaleTimeString();
             logOutput.innerHTML = `[${timestamp}] ${message}<br>` + logOutput.innerHTML;
@@ -707,6 +1133,7 @@
 
                 log(`🧮 Shortest path ${nodes[robotPos].name} → ${nodes[target].name}: ${path.map(k => nodes[k].short).join(' → ')} (cost ${dist[target]})`);
                 log(`🏗️ Crane Robot en route to ${nodes[target].name}...`);
+                setCameraTravel('robot');
 
                 const ok = await moveAlongPath(robot, path, token, 'path-robot');
                 if (!ok) return;
@@ -714,7 +1141,13 @@
 
                 const faultyComponent = serverFaults[target];
                 log(`📡 Robot arrived at ${nodes[target].name}. Scanning ArUco marker board — slot position confirmed.`);
+                log(`🏷️ Barcode decoded — ${nodes[target].serial} confirmed as ${nodes[target].name}.`);
+                setCameraArrive('robot', target, { fault: faultyComponent });
+                showCameraFlash(target);
+                await delay(400);
+                if (token !== runToken) return;
                 log(`🔧 Deploying mini-crane hoist — swapping ${faultyComponent.name}.`);
+                setCameraRepair(target);
                 await delay(500);
                 if (token !== runToken) return;
 
@@ -723,6 +1156,7 @@
                 el.classList.add('fixed-flash');
                 setTimeout(() => el.classList.remove('fixed-flash'), 1000);
                 log(`✅ ${nodes[target].name} — ${faultyComponent.name} replaced. Server restored to operational status.`);
+                setCameraVerify(target);
                 restoreServerLabel(target);
                 clearPathHighlight();
             }
@@ -732,11 +1166,12 @@
                 const { prev } = dijkstra(robotPos);
                 const homePath = getPath(prev, robotPos, 'main');
                 log('🏗️ All component faults resolved. Returning to Dock via shortest route...');
+                setCameraTravel('robot');
                 const ok = await moveAlongPath(robot, homePath, token, 'path-robot');
                 if (ok) robotPos = 'main';
                 clearPathHighlight();
             }
-            if (token === runToken) log('✅ All servers operational. Robot idling at Dock.');
+            if (token === runToken) { log('✅ All servers operational. Robot idling at Dock.'); setCameraIdle(); }
         }
 
         // ---------------------------------------------------------------
@@ -772,6 +1207,7 @@
                     const { prev } = dijkstra(humanPos);
                     const path = getPath(prev, humanPos, key);
                     if (path && path.length > 1) {
+                        setCameraTravel('human');
                         const ok = await moveAlongPath(human, path, token, 'path-human');
                         if (!ok) return;
                     }
@@ -784,11 +1220,19 @@
                         el.classList.remove('hidden-error');
                         el.classList.add('error');
                         log(`📡 Human scanned the ArUco marker board on ${nodes[key].name} — slot confirmed.`);
+                        log(`🏷️ Barcode decoded — ${nodes[key].serial} confirmed as ${nodes[key].name}.`);
+                        setCameraArrive('human', key, { fault: serverFaults[key] });
+                        showCameraFlash(key);
+                        await delay(400);
+                        if (token !== runToken) return;
                         setServerFaultLabel(key, serverFaults[key]);
                         log(`🔍 Component fault confirmed: ${nodes[key].name} — ${serverFaults[key].name}. Radioing coordinates to Crane Robot.`);
                         pending.push(key);
                     } else {
-                        log(`🚶 ${nodes[key].name} inspected — ArUco marker board scanned, all components nominal.`);
+                        log(`📡 Human scanned the ArUco marker board on ${nodes[key].name} — slot confirmed.`);
+                        log(`🏷️ Barcode decoded — ${nodes[key].serial} confirmed as ${nodes[key].name}.`);
+                        setCameraArrive('human', key, { fault: null });
+                        log(`🚶 ${nodes[key].name} inspected — all components nominal.`);
                     }
                     clearPathHighlight();
                     await delay(200);
@@ -811,12 +1255,20 @@
 
                     log(`🧮 Robot computing shortest path to ${nodes[target].name}: ${path.map(k => nodes[k].short).join(' → ')} (cost ${dist[target]})`);
                     log(`🏗️ Crane Robot moving to repair ${nodes[target].name} using human-verified coordinates.`);
+                    setCameraTravel('robot');
 
                     const ok = await moveAlongPath(robot, path, token, 'path-robot');
                     if (!ok) return;
                     robotPos = target;
 
                     const faultyComponent = serverFaults[target];
+                    log(`📡 Robot arrived at ${nodes[target].name}. Re-scanning ArUco marker board to confirm slot before repair.`);
+                    log(`🏷️ Barcode re-verified — ${nodes[target].serial} matches ${nodes[target].name}.`);
+                    setCameraArrive('robot', target, { fault: faultyComponent });
+                    showCameraFlash(target);
+                    await delay(400);
+                    if (token !== runToken) return;
+                    setCameraRepair(target);
                     await delay(500);
                     if (token !== runToken) return;
 
@@ -825,6 +1277,7 @@
                     el.classList.add('fixed-flash');
                     setTimeout(() => el.classList.remove('fixed-flash'), 1000);
                     log(`🔧 ${nodes[target].name} — ${faultyComponent.name} replaced using human-verified coordinates. Server restored to service.`);
+                    setCameraVerify(target);
                     restoreServerLabel(target);
                     clearPathHighlight();
                 }
@@ -834,6 +1287,7 @@
             if (token !== runToken) return;
 
             log('🏃 Search and repair complete. Sending team back to the Dock...');
+            setCameraTravel(robotPos !== 'main' ? 'robot' : 'human');
             const homeTasks = [];
             if (robotPos !== 'main') {
                 const { prev } = dijkstra(robotPos);
@@ -850,6 +1304,7 @@
             clearPathHighlight();
             human.style.display = 'none';
             log('✅ Team returned to Dock. All servers nominal.');
+            setCameraIdle();
         }
 
         // ---------------------------------------------------------------
@@ -866,11 +1321,13 @@
             resetToHome();
             robotPos = 'main';
             humanPos = 'main';
+            setCameraIdle();
 
             setButtonsDisabled(true);
             try {
                 if (type === 'A') {
                     log('Scenario A triggered: Rack fully healthy. All 7 servers nominal. Crane robot idling at the Dock.');
+                    setCameraIdle();
                 } else if (type === 'B') {
                     log('Scenario B triggered: injecting random component fault(s) across the rack.');
                     await runScenarioB(token);
@@ -889,6 +1346,7 @@
         window.onload = () => {
             buildGraph();
             resetToHome();
+            setCameraIdle();
             log('System initialized. Rack layout loaded — 2 server rows, 7 servers, 1 robot dock. Dijkstra pathfinding engine ready.');
         };
     </script>
