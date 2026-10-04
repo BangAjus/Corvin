@@ -87,13 +87,6 @@
         .tab b { display: block; font-size: 13.5px; }
         .tab small { display: block; font-size: 11px; color: var(--dim); margin-top: 1px; }
 
-        .rail-foot {
-            margin-top: auto; border: 1px solid var(--line); border-radius: 12px; padding: 12px;
-            background: #070D1B; display: grid; gap: 10px; font-size: 12px;
-        }
-        .rail-foot .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--muted); }
-        .rail-foot .row span:last-child { font-family: var(--mono); color: #D5E1FF; }
-
         main { min-width: 0; padding: 18px 22px 22px; }
 
         /* ------------------------------------------------------------ */
@@ -379,19 +372,6 @@
         .fleet-sum b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
         .fleet-sum span { font-size: 11px; color: var(--dim); }
 
-        .log-tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border-bottom: 1px solid #101C3A; }
-        .log-tools input[type="search"] { flex: 1; min-width: 160px; background: #070D1B; border: 1px solid #243B73; border-radius: 9px; padding: 7px 11px; color: var(--text); font: 12px var(--mono); }
-        .chipbtn { padding: 5px 10px; border-radius: 999px; border: 1px solid #243B73; background: #0B1735; color: var(--muted); font: 700 11px var(--mono); }
-        .chipbtn.on { background: #1B3F9C; border-color: #5B8CFF; color: #fff; }
-        .dlog { max-height: 340px; overflow: auto; padding: 6px 14px 10px; font: 12px/1.6 var(--mono); }
-        .dlog .r { display: grid; grid-template-columns: 112px 66px 1fr; gap: 10px; padding: 3px 0; border-bottom: 1px dashed #0F1B3C; align-items: baseline; }
-        .dlog .r .t { color: #4F6192; }
-        .dlog .r .k { font: 700 9.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #7F93C2; }
-        .dlog .r.alert .k, .dlog .r.alert .m { color: #FCA5A5; }
-        .dlog .r.ok .k, .dlog .r.ok .m { color: #6EE7B7; }
-        .dlog .r.robot .k, .dlog .r.robot .m { color: #93C5FD; }
-        .dlog .r.human .k, .dlog .r.human .m { color: #FCD34D; }
-        .dlog .r .m { color: #A9B9DD; overflow-wrap: anywhere; }
         .foot-note { margin-top: 14px; font-size: 11.5px; color: var(--dim); }
 
         /* ------------------------------------------------------------ */
@@ -410,7 +390,7 @@
         @media (max-width: 860px) {
             .app { grid-template-columns: 1fr; }
             .rail { position: static; height: auto; flex-direction: row; align-items: center; flex-wrap: wrap; padding: 10px 12px; gap: 8px; }
-            .rail-foot, .rail-label, .tab small { display: none; }
+            .rail-label, .tab small { display: none; }
             .brand { padding: 0 10px 0 0; }
             .tab { width: auto; }
             main { padding: 14px; }
@@ -477,17 +457,9 @@
             </button>
             <button class="tab" role="tab" id="tab-dash" data-tab="dash" aria-selected="false" aria-controls="view-dash">
                 <svg class="ic"><use href="#i-chart" /></svg>
-                <span><b>Dashboard</b><small>Weekly · jobs · server log</small></span>
+                <span><b>Dashboard</b><small>Weekly · jobs · fault trends</small></span>
             </button>
 
-            <div class="rail-foot">
-                <div class="row"><span>CRN-01</span><span id="rail-mode"></span></div>
-                <div>
-                    <div class="row"><span>Battery</span><span id="rail-batt">100%</span></div>
-                    <div class="meter"><i id="rail-batt-bar" style="width:100%"></i></div>
-                </div>
-                <div class="row"><span>Link</span><span>SIM · local</span></div>
-            </div>
         </nav>
 
         <main>
@@ -531,7 +503,7 @@
                         </div>
 
                         <div class="card log-card">
-                            <div class="card-h"><span>System log</span><button class="btn sm" id="btn-clear-log" title="Clears the stored log (also used by the Dashboard)">Clear</button></div>
+                            <div class="card-h"><span>Server log</span><button class="btn sm" id="btn-clear-log" title="Clears the stored log">Clear</button></div>
                             <div class="log-b" id="sim-log" aria-live="polite"></div>
                         </div>
                     </div>
@@ -659,23 +631,8 @@
                         <div class="card-b" id="ch-fleet"></div>
                     </article>
 
-                    <article class="card span-12">
-                        <div class="card-h"><span>Server log</span><span style="color:var(--dim);text-transform:none;letter-spacing:0;font-weight:400" id="dlog-meta"></span></div>
-                        <div class="log-tools">
-                            <div class="seg" id="lf-seg" style="padding:2px">
-                                <button class="chipbtn on" data-k="all">All</button>
-                                <button class="chipbtn" data-k="alert">Alerts</button>
-                                <button class="chipbtn" data-k="robot">Robot</button>
-                                <button class="chipbtn" data-k="human">Human</button>
-                                <button class="chipbtn" data-k="ok">Resolved</button>
-                                <button class="chipbtn" data-k="system">System</button>
-                            </div>
-                            <input type="search" id="lf-q" placeholder="Search log…" aria-label="Search log">
-                        </div>
-                        <div class="dlog" id="dlog"></div>
-                    </article>
                 </div>
-                <p class="foot-note">Weekly figures are deterministic mock data. Today's bars, the active-fault count and the server log are live: they come from what you run in the Detection Simulation and are stored in this browser.</p>
+                <p class="foot-note">Weekly figures are deterministic mock data. Today's bars and the active-fault count are live: they come from what you run in the Detection Simulation and are stored in this browser. The server log lives in the Detection Simulation tab.</p>
             </section>
         </main>
     </div>
@@ -859,7 +816,6 @@
             LOG.push({ t: Date.now(), k: kind, m: msg });
             if (LOG.length > 500) LOG.splice(0, LOG.length - 500);
             saveLogSoon(); renderSimLog();
-            if (S.tab === 'dash') renderDashLogSoon();
         }
 
         /* ============================================================
@@ -1526,8 +1482,8 @@
             const sv = frontServer();
             $('#t-face').textContent = sv ? `Server ${sv.id}` : ({ N: 'North ↑', S: 'South ↓', E: 'East →', W: 'West ←' })[S.robot.face];
             const b = Math.round(S.robot.battery);
-            $('#t-batt').textContent = b + '%'; $('#rail-batt').textContent = b + '%';
-            $('#t-batt-bar').style.width = b + '%'; $('#rail-batt-bar').style.width = b + '%';
+            $('#t-batt').textContent = b + '%';
+            $('#t-batt-bar').style.width = b + '%';
         }
         function renderBanner() {
             const el = $('#banner');
@@ -1543,7 +1499,7 @@
         }
         function updateHud() {
             const pill = pillHtml();
-            $('#mode-pill').innerHTML = pill; $('#t-mode').innerHTML = pill; $('#rail-mode').innerHTML = pill;
+            $('#mode-pill').innerHTML = pill; $('#t-mode').innerHTML = pill;
             updatePos(); renderBanner();
             const man = S.manual && !S.estop;
             $$('#pad [data-dir]').forEach(b => { b.disabled = !man; });
@@ -1726,16 +1682,8 @@
                 <div class="fleet-sum"><div><b>${j1 + d.crn2.jobs}</b><span>jobs · fleet total</span></div><div><b>${((e1 + d.crn2.err) / (j1 + d.crn2.jobs) * 100).toFixed(1)}%</b><span>fleet error rate</span></div></div>`;
         }
 
-        let logFilter = 'all', logQuery = '';
-        function renderDashLog() {
-            const q = logQuery.trim().toLowerCase();
-            const rows = LOG.slice().reverse().filter(e => (logFilter === 'all' || e.k === logFilter) && (!q || e.m.toLowerCase().includes(q)));
-            $('#dlog-meta').textContent = `${rows.length} of ${LOG.length} entries · stored in this browser`;
-            $('#dlog').innerHTML = rows.slice(0, 200).map(e => `<div class="r ${e.k}"><span class="t">${fmtT(e.t)}</span><span class="k">${e.k === 'ok' ? 'resolved' : e.k}</span><span class="m">${esc(e.m)}</span></div>`).join('') || '<div class="empty" style="padding:14px 0">No log entries match.</div>';
-        }
-        let dashTimer = null, logTimer = null;
+        let dashTimer = null;
         const renderDashboardSoon = () => { clearTimeout(dashTimer); dashTimer = setTimeout(renderDashboard, 200); };
-        const renderDashLogSoon = () => { clearTimeout(logTimer); logTimer = setTimeout(renderDashLog, 150); };
         function renderDashboard() {
             const w = S.week, d = getWeek(w), p = w < 2 ? getWeek(w + 1) : null;
             renderKpis(d, p);
@@ -1743,7 +1691,6 @@
             barChart($('#ch-jobs'), d.labels, [{ name: 'Auto-fix', color: '#3B82F6', values: d.jobs.auto }, { name: 'Human assist', color: '#F59E0B', values: d.jobs.human }, { name: 'Manual', color: '#22D3EE', values: d.jobs.manual }]);
             const tj = totalJobs(d); $('#jobs-badge').textContent = `${tj} total · ${(tj / 7).toFixed(1)}/day`;
             donut($('#ch-cat'), d.faultCats); heatmap($('#ch-heat'), d.serverFaults); fleet($('#ch-fleet'), d, p);
-            renderDashLog();
         }
 
         /* ============================================================
@@ -1777,8 +1724,6 @@
         });
         $('#btn-clear-log').addEventListener('click', () => { LOG = []; store.set(LOG_KEY, LOG); log('Log cleared.', 'system'); });
         $$('#week-seg button').forEach(b => b.addEventListener('click', () => { S.week = +b.dataset.w; $$('#week-seg button').forEach(x => x.classList.toggle('on', x === b)); renderDashboard(); }));
-        $$('#lf-seg button').forEach(b => b.addEventListener('click', () => { logFilter = b.dataset.k; $$('#lf-seg button').forEach(x => x.classList.toggle('on', x === b)); renderDashLog(); }));
-        $('#lf-q').addEventListener('input', e => { logQuery = e.target.value; renderDashLog(); });
 
         // recharge while parked at the dock
         setInterval(() => { if (S.robot.x === DOCK.x && S.robot.y === DOCK.y && S.robot.battery < 100) { S.robot.battery = Math.min(100, S.robot.battery + 1.2); updatePos(); } }, 1000);
