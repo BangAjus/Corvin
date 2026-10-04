@@ -4,1351 +4,1792 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corvin - Server Node Simulation</title>
+    <title>Corvin - Server Rack Maintenance Robot</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%231E3A8A'/%3E%3Cg fill='none' stroke='%23BFD4FF' stroke-width='3'%3E%3Crect x='9' y='10' width='30' height='8' rx='2'/%3E%3Crect x='9' y='20' width='30' height='8' rx='2'/%3E%3Crect x='9' y='30' width='30' height='8' rx='2'/%3E%3C/g%3E%3C/svg%3E">
     <style>
         :root {
-            --navy-primary: #0A2540;
-            --navy-light: #1E3A8A;
-            --white: #FFFFFF;
-            --gray-bg: #F8FAFC;
-            --error-red: #EF4444;
-            --success-green: #10B981;
-            --human-amber: #F59E0B;
+            --bg: #03050A;
+            --panel: #0A1224;
+            --line: #16264A;
+            --line-2: #22386B;
+            --text: #E8EEFC;
+            --muted: #8FA0C4;
+            --dim: #5C6C92;
+            --blue: #3B82F6;
+            --navy: #1E3A8A;
+            --cyan: #38BDF8;
+            --red: #EF4444;
+            --green: #10B981;
+            --amber: #F59E0B;
+            --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; }
 
         body {
-            background-color: var(--gray-bg);
-            color: var(--navy-primary);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        header {
-            background-color: var(--navy-primary);
-            color: var(--white);
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        header p {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin-top: 5px;
-        }
-
-        main {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 300px 1fr 300px;
-            gap: 20px;
-            padding: 20px;
-            max-width: 1900px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .control-panel {
-            background: var(--white);
-            padding: 20px;
-            border-radius: 8px;
-            border: 2px solid var(--navy-primary);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .control-panel h2 {
-            font-size: 1.2rem;
-            border-bottom: 2px solid var(--navy-primary);
-            padding-bottom: 5px;
-            margin-bottom: 5px;
-        }
-
-        .graph-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 5px;
-        }
-
-        .graph-meta span {
-            background: var(--gray-bg);
-            border: 1px solid #CBD5E1;
-            border-radius: 20px;
-            padding: 4px 10px;
-            font-size: 0.72rem;
-            color: var(--navy-primary);
-        }
-
-        .graph-meta span strong {
-            color: var(--navy-light);
-        }
-
-        .scenario-btn {
-            background-color: var(--white);
-            color: var(--navy-primary);
-            border: 2px solid var(--navy-primary);
-            padding: 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            text-align: left;
-            transition: all 0.2s ease;
-        }
-
-        .scenario-btn .btn-desc {
-            display: block;
-            font-weight: normal;
-            font-size: 0.72rem;
-            opacity: 0.75;
-            margin-top: 3px;
-        }
-
-        .scenario-btn:hover {
-            background-color: var(--navy-primary);
-            color: var(--white);
-        }
-
-        .scenario-btn.active {
-            background-color: var(--navy-primary);
-            color: var(--white);
-            box-shadow: 0 0 8px rgba(10, 37, 64, 0.5);
-        }
-
-        .scenario-btn:disabled {
-            opacity: 0.55;
-            cursor: not-allowed;
-        }
-
-        .status-box {
-            margin-top: auto;
-            background: var(--navy-primary);
-            color: var(--white);
-            padding: 15px;
-            border-radius: 6px;
-            font-size: 0.82rem;
-            max-height: 320px;
-            overflow-y: auto;
-        }
-
-        .status-box h3 {
-            margin-bottom: 5px;
-            color: #60A5FA;
-        }
-
-        #log-output div,
-        #log-output {
-            line-height: 1.5;
-        }
-
-        .simulation-container {
-            background: var(--white);
-            border-radius: 8px;
-            border: 2px solid var(--navy-primary);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .graph-scroll {
-            flex: 1;
-            overflow: auto;
-            position: relative;
-        }
-
-        .graph-area {
-            position: relative;
-            width: 1000px;
-            height: 640px;
-            background-image: radial-gradient(#CBD5E1 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-
-        /* Network Connections via SVG */
-        .network-lines {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .edge-line {
-            stroke: #94A3B8;
-            stroke-width: 2;
-            transition: stroke 0.25s ease, stroke-width 0.25s ease;
-        }
-
-        .edge-line.path-robot {
-            stroke: var(--navy-light);
-            stroke-width: 4;
-        }
-
-        .edge-line.path-human {
-            stroke: var(--human-amber);
-            stroke-width: 4;
-        }
-
-        .edge-weight {
-            font-size: 11px;
-            font-weight: bold;
-            fill: var(--navy-primary);
-            stroke: var(--white);
-            stroke-width: 3px;
-            paint-order: stroke;
-            text-anchor: middle;
-        }
-
-        .node {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: var(--white);
-            border: 4px solid var(--navy-primary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.3s, border-color 0.3s;
-            z-index: 10;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
-
-        .node:hover {
-            transform: scale(1.07);
-        }
-
-        .node.error {
-            border-color: var(--error-red);
-            background-color: #FEF2F2;
-        }
-
-        .node.hidden-error {
-            /* Looks completely normal until human arrives */
-            border-color: var(--navy-primary);
-            background-color: var(--white);
-        }
-
-        @keyframes fixedFlash {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.65); }
-            70% { box-shadow: 0 0 0 18px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); }
-        }
-
-        .node.fixed-flash {
-            border-color: var(--success-green);
-            animation: fixedFlash 1s ease-out;
-        }
-
-        .node-label {
-            margin-top: 2px;
-            font-size: 0.65rem;
-            color: #64748B;
-        }
-
-        .node.dock {
-            border-color: var(--navy-light);
-            background-color: #EFF6FF;
-        }
-
-        .node.dock .node-label {
-            color: var(--navy-light);
-            font-weight: bold;
-        }
-
-        .node.fault-label .node-label {
-            color: var(--error-red);
-            font-weight: bold;
-        }
-
-        /* Camera capture detail — brief viewfinder + shutter flash shown
-           whenever the robot (or human) scans a node's ArUco board. */
-        .node.camera-scan {
-            box-shadow: 0 0 0 5px rgba(30, 58, 138, 0.35), 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
-
-        .camera-frame {
-            position: absolute;
-            width: 96px;
-            height: 96px;
-            transform: translate(-48px, -48px);
-            pointer-events: none;
-            z-index: 25;
-            animation: cameraFrameFade 0.9s ease-out forwards;
-        }
-
-        .camera-frame span {
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            border: 2px solid var(--navy-light);
-        }
-
-        .camera-frame .tl { top: 0; left: 0; border-right: none; border-bottom: none; }
-        .camera-frame .tr { top: 0; right: 0; border-left: none; border-bottom: none; }
-        .camera-frame .bl { bottom: 0; left: 0; border-right: none; border-top: none; }
-        .camera-frame .br { bottom: 0; right: 0; border-left: none; border-top: none; }
-
-        @keyframes cameraFrameFade {
-            0%   { opacity: 0; transform: translate(-48px, -48px) scale(1.35); }
-            20%  { opacity: 1; transform: translate(-48px, -48px) scale(1); }
-            75%  { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        .camera-badge {
-            position: absolute;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            transform: translate(-13px, -13px);
-            background: var(--navy-primary);
-            color: var(--white);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            z-index: 26;
-            pointer-events: none;
-            box-shadow: 0 0 0 3px var(--white), 0 2px 6px rgba(0, 0, 0, 0.35);
-            animation: cameraBadgePop 0.9s ease-out forwards;
-        }
-
-        @keyframes cameraBadgePop {
-            0%   { opacity: 0; transform: translate(-13px, -13px) scale(0.4); }
-            20%  { opacity: 1; transform: translate(-13px, -13px) scale(1.2); }
-            35%  { opacity: 1; transform: translate(-13px, -13px) scale(1); }
-            80%  { opacity: 1; }
-            100% { opacity: 0; transform: translate(-13px, -13px) scale(0.85); }
-        }
-
-        .rack-label {
-            position: absolute;
-            transform: translate(-50%, -50%);
-            font-size: 0.72rem;
-            font-weight: bold;
-            letter-spacing: 1px;
-            color: #94A3B8;
-            text-transform: uppercase;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        /* Actors / Finders */
-        .finder {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            font-weight: bold;
-            transition: all 1.5s cubic-bezier(0.25, 1, 0.5, 1);
-            z-index: 20;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        #robot-finder {
-            background-color: var(--navy-light);
-            border: 2px solid var(--white);
-            color: var(--white);
-            /* Base offset so they don't overlap perfectly */
-            margin-left: -20px;
-            margin-top: -20px;
-        }
-
-        #human-finder {
-            background-color: var(--human-amber);
-            border: 2px solid var(--white);
-            color: var(--white);
-            margin-left: 20px;
-            margin-top: -20px;
-            display: none;
-        }
-
-        .legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            padding: 15px;
-            background: #F1F5F9;
-            border-top: 2px solid var(--navy-primary);
-            font-size: 0.82rem;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-            flex-shrink: 0;
-        }
-
-        /* ---------------------------------------------------------- */
-        /* Camera POV sidebar                                         */
-        /* ---------------------------------------------------------- */
-        .camera-panel {
-            background: var(--white);
-            padding: 20px;
-            border-radius: 8px;
-            border: 2px solid var(--navy-primary);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .camera-panel h2 {
-            font-size: 1.2rem;
-            border-bottom: 2px solid var(--navy-primary);
-            padding-bottom: 5px;
-            margin-bottom: 5px;
-        }
-
-        .camera-viewport {
-            position: relative;
-            background: #0B1220;
-            border-radius: 6px;
-            overflow: hidden;
-            aspect-ratio: 13 / 8;
-            border: 1px solid #1E293B;
-        }
-
-        .camera-hud-top {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 8px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.65), transparent);
-            font-family: 'Courier New', monospace;
-            font-size: 0.68rem;
-            color: #E2E8F0;
-            letter-spacing: 0.5px;
-            z-index: 5;
-        }
-
-        .rec-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #EF4444;
-            box-shadow: 0 0 4px #EF4444;
-            animation: recBlink 1.2s infinite;
-            flex-shrink: 0;
-        }
-
-        @keyframes recBlink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.25; }
-        }
-
-        #camera-actor-label {
-            flex: 1;
-            font-weight: bold;
-        }
-
-        .camera-scene {
-            position: absolute;
-            inset: 0;
-        }
-
-        .camera-scene svg {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        .camera-corners span {
-            position: absolute;
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(148, 163, 184, 0.6);
-            z-index: 4;
-            pointer-events: none;
-        }
-
-        .camera-corners .tl { top: 4px; left: 4px; border-right: none; border-bottom: none; }
-        .camera-corners .tr { top: 4px; right: 4px; border-left: none; border-bottom: none; }
-        .camera-corners .bl { bottom: 4px; left: 4px; border-right: none; border-top: none; }
-        .camera-corners .br { bottom: 4px; right: 4px; border-left: none; border-top: none; }
-
-        .camera-scanline {
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 26px;
-            background: linear-gradient(to bottom, transparent, rgba(125, 211, 252, 0.18), transparent);
-            z-index: 3;
-            pointer-events: none;
-            opacity: 0;
-        }
-
-        .camera-viewport.live .camera-scanline {
-            opacity: 1;
-            animation: scanSweep 2.4s linear infinite;
-        }
-
-        @keyframes scanSweep {
-            0% { transform: translateY(-26px); }
-            100% { transform: translateY(180px); }
-        }
-
-        .camera-hud-bottom {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 6px 8px;
-            background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
-            font-family: 'Courier New', monospace;
-            font-size: 0.65rem;
-            color: #7DD3FC;
-            line-height: 1.5;
-            z-index: 5;
-        }
-
-        #camera-line-status {
-            color: #FCA5A5;
-        }
-
-        .camera-viewport:not(.fault) #camera-line-status {
-            color: #86EFAC;
-        }
-
-        .camera-caption {
-            font-size: 0.78rem;
-            color: #64748B;
-            line-height: 1.4;
-        }
-
-        .camera-legend {
-            font-size: 0.7rem;
-            color: #94A3B8;
-            border-top: 1px solid #E2E8F0;
-            padding-top: 10px;
-            line-height: 1.6;
+            background:
+                radial-gradient(1100px 520px at 12% -8%, #0A1A3F 0%, rgba(10, 26, 63, 0) 62%),
+                var(--bg);
+            color: var(--text);
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            line-height: 1.45;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+        button:focus-visible, input:focus-visible, .srv:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+        [hidden] { display: none !important; }
+
+        svg.ic { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-thumb { background: #16264A; border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
+        ::-webkit-scrollbar-thumb:hover { background: #22386B; background-clip: content-box; border: 2px solid transparent; }
+
+        /* ------------------------------------------------------------ */
+        /* App shell + left tab rail                                     */
+        /* ------------------------------------------------------------ */
+        .app { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 100vh; }
+
+        .rail {
+            position: sticky; top: 0; height: 100vh;
+            display: flex; flex-direction: column; gap: 6px;
+            padding: 20px 14px;
+            background: linear-gradient(180deg, #04070E, #050A15);
+            border-right: 1px solid var(--line);
+        }
+
+        .brand { display: flex; align-items: center; gap: 12px; padding: 2px 8px 18px; }
+        .brand-mark {
+            width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center;
+            background: linear-gradient(145deg, #1E3A8A, #0B1F55); border: 1px solid #2B4FA8; color: #BFD4FF;
+        }
+        .brand-mark svg { width: 22px; height: 22px; }
+        .brand b { display: block; letter-spacing: 3px; font-size: 17px; }
+        .brand small { display: block; color: var(--dim); font-size: 11px; }
+
+        .rail-label { font-size: 10px; letter-spacing: .14em; color: var(--dim); padding: 6px 10px; text-transform: uppercase; }
+
+        .tab {
+            display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+            padding: 11px 12px; border-radius: 10px; color: var(--muted);
+            border: 1px solid transparent; transition: background .15s, color .15s;
+        }
+        .tab:hover { background: #0A1429; color: var(--text); }
+        .tab[aria-selected="true"] {
+            background: linear-gradient(90deg, rgba(59, 130, 246, .2), rgba(59, 130, 246, .05));
+            border-color: #1F3A78; color: #fff;
+        }
+        .tab[aria-selected="true"] .ic { color: var(--cyan); }
+        .tab b { display: block; font-size: 13.5px; }
+        .tab small { display: block; font-size: 11px; color: var(--dim); margin-top: 1px; }
+
+        .rail-foot {
+            margin-top: auto; border: 1px solid var(--line); border-radius: 12px; padding: 12px;
+            background: #070D1B; display: grid; gap: 10px; font-size: 12px;
+        }
+        .rail-foot .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--muted); }
+        .rail-foot .row span:last-child { font-family: var(--mono); color: #D5E1FF; }
+
+        main { min-width: 0; padding: 18px 22px 22px; }
+
+        /* ------------------------------------------------------------ */
+        /* Shared bits                                                   */
+        /* ------------------------------------------------------------ */
+        .card {
+            background: linear-gradient(180deg, #0A1328, #08101F);
+            border: 1px solid var(--line); border-radius: 14px; min-width: 0;
+        }
+        .card-h {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 11px 14px; border-bottom: 1px solid #101C3A;
+            font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+        }
+        .card-b { padding: 14px; }
+
+        .bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: space-between; }
+        .bar h1 { font-size: 20px; }
+        .bar .sub { color: var(--dim); font-size: 12px; margin-top: 2px; }
+        .bar .tools { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+        .seg { display: inline-flex; background: #070D1B; border: 1px solid var(--line); border-radius: 12px; padding: 3px; gap: 2px; }
+        .seg button { padding: 7px 14px; border-radius: 9px; font-size: 12.5px; font-weight: 700; color: var(--muted); white-space: nowrap; text-align: left; }
+        .seg button small { display: block; font-weight: 400; font-size: 10.5px; opacity: .7; }
+        .seg button:hover { color: #fff; background: #0C1733; }
+        .seg button.on { background: linear-gradient(180deg, #2150C4, #1B3F9C); color: #fff; box-shadow: 0 0 0 1px #3B6BE0 inset, 0 4px 14px rgba(33, 80, 196, .35); }
+
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+            padding: 8px 12px; border-radius: 9px; border: 1px solid #243B73; background: #0C1733;
+            color: #D5E1FF; font-size: 12px; font-weight: 700; transition: .12s; white-space: nowrap;
+        }
+        .btn:hover:not(:disabled) { background: #12214A; border-color: #3B6BE0; }
+        .btn:disabled { opacity: .38; cursor: not-allowed; }
+        .btn.pri { background: linear-gradient(180deg, #2150C4, #1B3F9C); border-color: #3B6BE0; color: #fff; }
+        .btn.danger { background: #3A0F1A; border-color: #B91C1C; color: #FECACA; }
+        .btn.danger:hover:not(:disabled) { background: #521422; border-color: #EF4444; }
+        .btn.sm { padding: 5px 9px; font-size: 11px; }
+        .btn .ic { width: 15px; height: 15px; }
+
+        .pill {
+            display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px;
+            font: 700 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase;
+            border: 1px solid #243B73; background: #0B1735; color: #9DB4EA;
+        }
+        .pill i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
+        .pill.auto { color: #7CB4FF; border-color: #2554B0; background: #0A1B45; }
+        .pill.human { color: #FCD34D; border-color: #8A5A0A; background: #2A1D05; }
+        .pill.manual { color: #67E8F9; border-color: #0E7490; background: #06242C; }
+        .pill.alert { color: #FCA5A5; border-color: #991B1B; background: #2B0A10; }
+
+        .switch { position: relative; display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); cursor: pointer; user-select: none; }
+        .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .switch .tr { width: 34px; height: 20px; border-radius: 999px; background: #0B1735; border: 1px solid #243B73; position: relative; transition: .15s; flex: none; }
+        .switch .tr::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #7F93C2; transition: .15s; }
+        .switch input:checked + .tr { background: #0E3A8F; border-color: #3B6BE0; }
+        .switch input:checked + .tr::after { left: 16px; background: #fff; }
+        .switch input:focus-visible + .tr { outline: 2px solid var(--cyan); outline-offset: 2px; }
+        .switch input:disabled + .tr { opacity: .4; }
+
+        .view[hidden] { display: none; }
+
+        /* ------------------------------------------------------------ */
+        /* Detection simulation                                          */
+        /* ------------------------------------------------------------ */
+        .sim { display: grid; grid-template-columns: minmax(0, 1fr) 348px; gap: 16px; align-items: start; }
+        .sim-left { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+        .sim-right { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 18px; max-height: calc(100vh - 36px); overflow-y: auto; padding-right: 4px; }
+        .bar h1 .pill { font-size: 10px; vertical-align: middle; }
+
+        .map-card { flex: none; height: clamp(440px, calc(100vh - 330px), 820px); display: flex; flex-direction: column; overflow: hidden; }
+        .banner { display: none; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #5B1220; background: linear-gradient(90deg, #2B0A10, #160A12); color: #FDA4AF; font-size: 12.5px; }
+        .banner.on { display: flex; }
+        .banner b { color: #fff; }
+        .banner .acts { margin-left: auto; display: flex; gap: 8px; flex: none; }
+
+        .map-wrap { flex: 1; min-height: 0; display: grid; place-items: center; padding: 10px; overflow: auto; }
+        .map { --cell: 80px; position: relative; flex: none; width: calc(var(--cell) * 7); height: calc(var(--cell) * 6 + 28px); }
+        .map-hdr { position: relative; height: 28px; }
+        .hl {
+            position: absolute; top: 0; height: 28px; display: flex; align-items: center; justify-content: center;
+            font: 700 10px var(--mono); letter-spacing: .14em; color: var(--dim);
+            left: calc(var(--c) * var(--cell)); width: calc(var(--w, 1) * var(--cell));
+        }
+        .hl.stack { color: #7C9BE0; }
+        .grid { position: relative; width: 100%; height: calc(var(--cell) * 6); }
+
+        .tile { position: absolute; left: calc(var(--x) * var(--cell)); top: calc(var(--y) * var(--cell)); width: var(--cell); height: var(--cell); border: 1px solid rgba(34, 56, 107, .32); background: #0A1329; }
+        .tile.aisle::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1px dashed rgba(70, 105, 190, .26); }
+        .tile.cross::after { content: ''; position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed rgba(70, 105, 190, .26); }
+        .tile.aisle.cross::after { display: none; }
+        .tile.trail-r { background: rgba(59, 130, 246, .26); box-shadow: inset 0 0 0 1px rgba(96, 165, 250, .5); }
+        .tile.trail-h { background: rgba(245, 158, 11, .22); box-shadow: inset 0 0 0 1px rgba(251, 191, 36, .5); }
+        .tile.trail-r.trail-h { background: linear-gradient(135deg, rgba(59, 130, 246, .3) 50%, rgba(245, 158, 11, .26) 50%); }
+
+        .shelf {
+            position: absolute; left: calc(var(--x) * var(--cell) + 3px); top: calc(var(--y) * var(--cell) + 3px);
+            width: calc(var(--w) * var(--cell) - 6px); height: calc(var(--h) * var(--cell) - 6px);
+            border-radius: 14px; background: linear-gradient(180deg, #050A16, #070D1C);
+            border: 1px solid #1B2D5C; box-shadow: inset 0 0 30px rgba(30, 58, 138, .18);
+        }
+
+        .srv {
+            position: absolute; left: calc(var(--x) * var(--cell)); top: calc(var(--y) * var(--cell));
+            width: var(--cell); height: var(--cell); padding: calc(var(--cell) * .06);
+            --led: #22C55E; cursor: pointer;
+        }
+        .srv-card {
+            position: relative; width: 100%; height: 100%; border-radius: calc(var(--cell) * .12);
+            border: 1px solid #213A74; background: linear-gradient(180deg, #0F1D42, #0A1431);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(var(--cell) * .02);
+            color: #9FB6EE; transition: border-color .2s, box-shadow .2s, transform .15s;
+        }
+        .srv:hover .srv-card { border-color: #3B6BE0; transform: translateY(-1px); }
+        .srv-ico { width: calc(var(--cell) * .4); height: calc(var(--cell) * .4); }
+        .srv-id { font: 700 max(9px, calc(var(--cell) * .125)) var(--mono); color: #C9D8FF; letter-spacing: .04em; }
+        .chips { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; min-height: calc(var(--cell) * .14); max-width: 100%; }
+        .chip { font: 700 max(7px, calc(var(--cell) * .095)) var(--mono); padding: 1px 3px; border-radius: 3px; font-style: normal; line-height: 1.15; border: 1px solid #7F1D1D; background: #3A0F1A; color: #FDA4AF; }
+        .chip.fixing { border-color: #92400E; background: #3A2A07; color: #FCD34D; }
+        .chip.fixed { border-color: #065F46; background: #052E22; color: #6EE7B7; }
+
+        .srv.fault { --led: #EF4444; }
+        .srv.fault .srv-card { border-color: #B91C1C; animation: pulse 1.6s ease-in-out infinite; }
+        .srv.fixing { --led: #F59E0B; }
+        .srv.fixing .srv-card { border-color: #B45309; box-shadow: 0 0 18px rgba(245, 158, 11, .3); }
+        .srv.suspect .srv-card { border-style: dashed; border-color: #B7791F; }
+        .srv.suspect .srv-card::after { content: '?'; position: absolute; top: calc(var(--cell) * .03); right: calc(var(--cell) * .07); font: 700 max(10px, calc(var(--cell) * .15)) var(--mono); color: #FBBF24; }
+        .srv.inspected:not(.suspect):not(.fault):not(.fixing) .srv-card::after { content: '\2713'; position: absolute; top: calc(var(--cell) * .03); right: calc(var(--cell) * .07); font: 700 max(10px, calc(var(--cell) * .14)) var(--mono); color: #34D399; }
+        .srv.flash .srv-card { animation: flash 1.1s ease-out; border-color: #10B981; }
+        .srv.scanning .srv-card { border-color: #38BDF8; box-shadow: 0 0 0 2px rgba(56, 189, 248, .35), 0 0 20px rgba(56, 189, 248, .35); }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 1px rgba(239, 68, 68, .35), 0 0 12px rgba(239, 68, 68, .18); }
+            50% { box-shadow: 0 0 0 1px rgba(239, 68, 68, .6), 0 0 26px rgba(239, 68, 68, .4); }
+        }
+        @keyframes flash { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, .8); } 100% { box-shadow: 0 0 0 22px rgba(16, 185, 129, 0); } }
+
+        .burst { position: absolute; inset: 2px; pointer-events: none; z-index: 5; animation: burst .9s ease-out forwards; }
+        .burst i { position: absolute; width: 14px; height: 14px; border: 2px solid #38BDF8; }
+        .burst i:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+        .burst i:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+        .burst i:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+        .burst i:nth-child(4) { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+        @keyframes burst { 0% { opacity: 0; transform: scale(1.35); } 25% { opacity: 1; transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; } }
+
+        .dock { position: absolute; left: calc(var(--x) * var(--cell)); top: calc(var(--y) * var(--cell)); width: var(--cell); height: var(--cell); display: grid; place-items: center; pointer-events: none; }
+        .dock-pad { width: 82%; height: 74%; border-radius: 12px; border: 1.5px dashed #2A56C4; background: rgba(30, 58, 138, .2); display: grid; place-items: end center; padding-bottom: 6%; color: #7CB4FF; font: 700 max(8px, calc(var(--cell) * .105)) var(--mono); letter-spacing: .14em; }
+
+        .actor {
+            position: absolute; left: 0; top: 0; width: var(--cell); height: var(--cell);
+            display: grid; place-items: center; z-index: 20; pointer-events: none;
+            transform: translate(calc(var(--ax) * var(--cell)), calc(var(--ay) * var(--cell)));
+            transition: transform var(--dur, 170ms) linear;
+        }
+        .actor .body { width: 58%; height: 58%; transform: rotate(var(--rot, 0deg)); transition: transform .2s; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .6)); }
+        .actor svg { width: 100%; height: 100%; display: block; }
+        .actor.human { display: none; }
+        .actor.human.on { display: grid; }
+        .actor.human .body { width: 44%; height: 44%; transform: translate(34%, -34%); }
+
+        .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 10px 14px; border-top: 1px solid #101C3A; font-size: 11.5px; color: var(--muted); }
+        .legend .it { display: inline-flex; align-items: center; gap: 7px; }
+        .sw { width: 12px; height: 12px; border-radius: 3px; flex: none; border: 1px solid #243B73; }
+
+        .log-card { height: 176px; flex: none; display: flex; flex-direction: column; min-height: 0; }
+        .log-b { flex: 1; min-height: 0; overflow: auto; padding: 8px 14px; font: 12px/1.55 var(--mono); }
+        .ln { display: flex; gap: 10px; padding: 1px 0; }
+        .ln .t { color: #4F6192; flex: none; }
+        .ln .m { color: #A9B9DD; min-width: 0; overflow-wrap: anywhere; }
+        .ln.alert .m { color: #FCA5A5; }
+        .ln.ok .m { color: #6EE7B7; }
+        .ln.robot .m { color: #93C5FD; }
+        .ln.human .m { color: #FCD34D; }
+
+        /* camera POV */
+        .cam { position: relative; aspect-ratio: 16 / 10; background: #050914; overflow: hidden; border-radius: 0 0 0 0; }
+        .cam-scene { position: absolute; inset: 0; }
+        .cam-scene svg { display: block; width: 100%; height: 100%; }
+        .cam-top { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: linear-gradient(180deg, rgba(0, 0, 0, .7), transparent); font: 700 10.5px var(--mono); letter-spacing: .06em; color: #E5ECFF; z-index: 5; }
+        .cam-top .grow { flex: 1; }
+        .rec { width: 8px; height: 8px; border-radius: 50%; background: #EF4444; box-shadow: 0 0 6px #EF4444; animation: blink 1.2s infinite; }
+        .cam:not(.live) .rec { background: #475569; box-shadow: none; animation: none; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+        .cam-bot { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px 10px 7px; background: linear-gradient(0deg, rgba(0, 0, 0, .85), transparent); font: 10.5px/1.5 var(--mono); color: #7DD3FC; z-index: 5; }
+        .cam-bot .st { color: #86EFAC; }
+        .cam.bad .cam-bot .st { color: #FCA5A5; }
+        .cam .corner { position: absolute; width: 14px; height: 14px; border: 2px solid rgba(148, 163, 184, .5); z-index: 4; pointer-events: none; }
+        .cam .corner.tl { top: 6px; left: 6px; border-right: 0; border-bottom: 0; }
+        .cam .corner.tr { top: 6px; right: 6px; border-left: 0; border-bottom: 0; }
+        .cam .corner.bl { bottom: 6px; left: 6px; border-right: 0; border-top: 0; }
+        .cam .corner.br { bottom: 6px; right: 6px; border-left: 0; border-top: 0; }
+        .scanline { position: absolute; left: 0; right: 0; top: -30px; height: 30px; background: linear-gradient(180deg, transparent, rgba(56, 189, 248, .22), transparent); z-index: 3; opacity: 0; pointer-events: none; }
+        .cam.live .scanline { opacity: 1; animation: sweep 2.6s linear infinite; }
+        @keyframes sweep { from { top: -30px; } to { top: 100%; } }
+        .flow { stroke-dasharray: 6 8; animation: flow .6s linear infinite; }
+        @keyframes flow { to { stroke-dashoffset: -14; } }
+        .cap { padding: 10px 14px; font-size: 12px; color: var(--muted); border-top: 1px solid #101C3A; }
+
+        .kv { display: grid; grid-template-columns: auto 1fr; gap: 7px 12px; font-size: 12.5px; align-items: center; }
+        .kv dt { color: var(--dim); }
+        .kv dd { color: #D5E1FF; text-align: right; font: 12px var(--mono); }
+        .meter { height: 6px; border-radius: 99px; background: #0B1735; overflow: hidden; margin-top: 5px; }
+        .meter i { display: block; height: 100%; background: linear-gradient(90deg, #1D4ED8, #38BDF8); border-radius: 99px; transition: width .3s; }
+
+        .pad { display: grid; grid-template-columns: repeat(3, 54px); grid-template-rows: repeat(3, 54px); gap: 8px; justify-content: center; margin: 4px 0 12px; }
+        .pad button { border-radius: 12px; border: 1px solid #243B73; background: linear-gradient(180deg, #0F1D42, #0A1431); display: grid; place-items: center; color: #BFD4FF; font: 700 10px var(--mono); letter-spacing: .06em; }
+        .pad button .ic { width: 20px; height: 20px; }
+        .pad button:hover:not(:disabled) { border-color: #3B6BE0; }
+        .pad button:active:not(:disabled), .pad button.down { background: #1B3F9C; border-color: #5B8CFF; color: #fff; }
+        .pad button:disabled { opacity: .32; cursor: not-allowed; }
+        .pad .mid { border-radius: 50%; color: #7DD3FC; }
+        .row-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+        .row-btns .btn { flex: 1; }
+        .hint { font-size: 11px; color: var(--dim); line-height: 1.6; margin-top: 10px; }
+        .hint kbd { font: 700 10px var(--mono); padding: 1px 5px; border-radius: 4px; border: 1px solid #243B73; background: #0B1735; color: #BFD4FF; }
+
+        .wo { padding: 9px 0; border-bottom: 1px solid #101C3A; }
+        .wo:last-child { border-bottom: 0; }
+        .wo-h { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+        .wo-h b { font: 700 12px var(--mono); color: #D5E1FF; }
+        .wo-h .loc { color: var(--dim); font-size: 11px; flex: 1; }
+        .wo-st { font: 700 9.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; border: 1px solid #7F1D1D; background: #3A0F1A; color: #FDA4AF; }
+        .wo-st.working { border-color: #92400E; background: #3A2A07; color: #FCD34D; }
+        .wo-st.unknown { border-color: #6B4B0E; background: #231A06; color: #E8B64A; }
+        .wo-c { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+        .wo-c .chip { font-size: 10px; padding: 2px 5px; }
+        .empty { color: var(--dim); font-size: 12px; padding: 4px 0; }
+
+        /* ------------------------------------------------------------ */
+        /* Dashboard                                                     */
+        /* ------------------------------------------------------------ */
+        .dash { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; margin-top: 16px; }
+        .span-3 { grid-column: span 3; } .span-4 { grid-column: span 4; } .span-5 { grid-column: span 5; }
+        .span-7 { grid-column: span 7; } .span-8 { grid-column: span 8; } .span-12 { grid-column: span 12; }
+
+        .kpi { padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+        .kpi-l { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+        .kpi-v { font-size: 32px; font-weight: 700; letter-spacing: -.5px; font-variant-numeric: tabular-nums; }
+        .kpi-v small { font-size: 13px; color: var(--dim); font-weight: 400; margin-left: 4px; letter-spacing: 0; }
+        .kpi-f { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 2px; }
+        .kpi-f svg { width: 90px; height: 26px; }
+        .dl { font: 700 11px var(--mono); padding: 2px 7px; border-radius: 6px; }
+        .dl.good { color: #6EE7B7; background: #052E22; }
+        .dl.bad { color: #FCA5A5; background: #3A0F1A; }
+        .dl.flat { color: #9DB4EA; background: #0B1735; }
+
+        .lg { display: inline-flex; gap: 12px; flex-wrap: wrap; font: 11px var(--mono); letter-spacing: 0; text-transform: none; font-weight: 400; }
+        .lg span { display: inline-flex; align-items: center; gap: 6px; }
+        .lg i { width: 9px; height: 9px; border-radius: 3px; }
+
+        .chart { position: relative; }
+        .chart svg { display: block; width: 100%; height: auto; }
+        .chart .gl { stroke: #12204A; stroke-width: 1; }
+        .chart .ax { fill: #5C6C92; font: 10px var(--mono); }
+        .tip { position: absolute; top: 6px; transform: translateX(-50%); pointer-events: none; background: #0B1530; border: 1px solid #243B73; border-radius: 8px; padding: 6px 9px; font: 11px/1.5 var(--mono); color: #D5E1FF; white-space: nowrap; box-shadow: 0 8px 24px rgba(0, 0, 0, .5); z-index: 4; }
+        .tip b { display: block; color: #fff; margin-bottom: 2px; }
+        .tip i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+
+        .donut-wrap { display: flex; align-items: center; gap: 18px; }
+        .donut-wrap svg { width: 150px; height: 150px; flex: none; }
+        .donut-leg { flex: 1; display: grid; gap: 7px; font-size: 12px; }
+        .donut-leg div { display: flex; align-items: center; gap: 8px; }
+        .donut-leg i { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+        .donut-leg span { margin-left: auto; font: 12px var(--mono); color: #D5E1FF; }
+        .donut-leg em { font-style: normal; color: var(--dim); font: 11px var(--mono); width: 36px; text-align: right; }
+
+        .heat { display: grid; grid-template-columns: 1fr 1fr 20px 1fr 1fr; gap: 6px; }
+        .heat .gap { grid-row: 1 / span 4; }
+        .heat .h { aspect-ratio: 1.15; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255, 255, 255, .06); font: 700 11px var(--mono); color: #fff; }
+        .heat .h small { font-weight: 400; font-size: 10px; opacity: .8; }
+        .heat-leg { display: flex; align-items: center; gap: 8px; margin-top: 12px; font: 10.5px var(--mono); color: var(--dim); }
+        .heat-leg .grad { flex: 1; height: 6px; border-radius: 99px; background: linear-gradient(90deg, #0F1B3E, #1D4ED8, #EF4444); }
+        .heat-note { margin-top: 8px; font-size: 12px; color: var(--muted); }
+        .heat-note b { color: #fff; font-family: var(--mono); }
+
+        table.fleet { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+        .fleet th { text-align: left; font: 700 10px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); padding: 0 6px 8px; }
+        .fleet td { padding: 10px 6px; border-top: 1px solid #101C3A; font-variant-numeric: tabular-nums; }
+        .fleet td.mono { font-family: var(--mono); }
+        .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; }
+        .fleet-sum { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .fleet-sum div { background: #070D1B; border: 1px solid #101C3A; border-radius: 10px; padding: 10px 12px; }
+        .fleet-sum b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+        .fleet-sum span { font-size: 11px; color: var(--dim); }
+
+        .log-tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border-bottom: 1px solid #101C3A; }
+        .log-tools input[type="search"] { flex: 1; min-width: 160px; background: #070D1B; border: 1px solid #243B73; border-radius: 9px; padding: 7px 11px; color: var(--text); font: 12px var(--mono); }
+        .chipbtn { padding: 5px 10px; border-radius: 999px; border: 1px solid #243B73; background: #0B1735; color: var(--muted); font: 700 11px var(--mono); }
+        .chipbtn.on { background: #1B3F9C; border-color: #5B8CFF; color: #fff; }
+        .dlog { max-height: 340px; overflow: auto; padding: 6px 14px 10px; font: 12px/1.6 var(--mono); }
+        .dlog .r { display: grid; grid-template-columns: 112px 66px 1fr; gap: 10px; padding: 3px 0; border-bottom: 1px dashed #0F1B3C; align-items: baseline; }
+        .dlog .r .t { color: #4F6192; }
+        .dlog .r .k { font: 700 9.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #7F93C2; }
+        .dlog .r.alert .k, .dlog .r.alert .m { color: #FCA5A5; }
+        .dlog .r.ok .k, .dlog .r.ok .m { color: #6EE7B7; }
+        .dlog .r.robot .k, .dlog .r.robot .m { color: #93C5FD; }
+        .dlog .r.human .k, .dlog .r.human .m { color: #FCD34D; }
+        .dlog .r .m { color: #A9B9DD; overflow-wrap: anywhere; }
+        .foot-note { margin-top: 14px; font-size: 11.5px; color: var(--dim); }
+
+        /* ------------------------------------------------------------ */
+        /* Responsive                                                    */
+        /* ------------------------------------------------------------ */
+        @media (max-width: 1280px) {
+            .sim { grid-template-columns: minmax(0, 1fr) 320px; }
+        }
+        @media (max-width: 1100px) {
+            .sim { grid-template-columns: 1fr; }
+            .sim-right { position: static; max-height: none; overflow: visible; }
+            .map-card { height: 560px; }
+            .span-3 { grid-column: span 6; }
+            .span-4, .span-5, .span-7, .span-8 { grid-column: span 12; }
+        }
+        @media (max-width: 860px) {
+            .app { grid-template-columns: 1fr; }
+            .rail { position: static; height: auto; flex-direction: row; align-items: center; flex-wrap: wrap; padding: 10px 12px; gap: 8px; }
+            .rail-foot, .rail-label, .tab small { display: none; }
+            .brand { padding: 0 10px 0 0; }
+            .tab { width: auto; }
+            main { padding: 14px; }
+            .span-3 { grid-column: span 12; }
+            .donut-wrap { flex-direction: column; align-items: flex-start; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .srv-card, .rec, .flow, .scanline, .burst { animation: none !important; }
         }
     </style>
 </head>
 
 <body>
 
-    <header>
-        <h1>Corvin</h1>
-        <p>Delta Competition Framework • Mobile Mini-Crane Server Rack Maintenance System — Dijkstra Pathfinding Engine</p>
-    </header>
+    <!-- icon sprite -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+        <defs>
+            <symbol id="i-server" viewBox="0 0 48 48">
+                <g fill="none" stroke="currentColor" stroke-width="2.2">
+                    <rect x="4" y="5" width="40" height="11" rx="2.5" />
+                    <rect x="4" y="18.5" width="40" height="11" rx="2.5" />
+                    <rect x="4" y="32" width="40" height="11" rx="2.5" />
+                </g>
+                <circle cx="10.5" cy="10.5" r="2" style="fill:var(--led,#22C55E)" />
+                <circle cx="10.5" cy="24" r="2" style="fill:var(--led,#22C55E)" />
+                <circle cx="10.5" cy="37.5" r="2" style="fill:var(--led,#22C55E)" />
+                <path d="M25 10.5h13M25 24h13M25 37.5h13" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".5" />
+            </symbol>
+            <symbol id="i-robot" viewBox="0 0 48 48">
+                <rect x="9" y="15" width="30" height="26" rx="7" fill="#1E3A8A" stroke="#93C5FD" stroke-width="2" />
+                <rect x="15" y="5" width="18" height="12" rx="3.5" fill="#0B1226" stroke="#38BDF8" stroke-width="2" />
+                <circle cx="24" cy="11" r="2.8" fill="#38BDF8" />
+                <rect x="15" y="23" width="18" height="10" rx="2.5" fill="#0B1226" opacity=".75" />
+                <path d="M19 28h10" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" />
+                <rect x="5" y="22" width="4" height="14" rx="2" fill="#BFD4FF" />
+                <rect x="39" y="22" width="4" height="14" rx="2" fill="#BFD4FF" />
+            </symbol>
+            <symbol id="i-human" viewBox="0 0 48 48">
+                <circle cx="24" cy="24" r="21" fill="#B45309" stroke="#FDE68A" stroke-width="2.5" />
+                <circle cx="24" cy="18" r="6" fill="#FFF7E0" />
+                <path d="M11 38c1.6-7.5 7-11 13-11s11.4 3.5 13 11" fill="#FFF7E0" />
+            </symbol>
+            <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z" fill="currentColor" /></symbol>
+            <symbol id="i-scan" viewBox="0 0 24 24"><g class="ic"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" /><circle cx="12" cy="12" r="3.2" /></g></symbol>
+            <symbol id="i-chart" viewBox="0 0 24 24"><g class="ic"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2" /></g></symbol>
+            <symbol id="i-up" viewBox="0 0 24 24"><path d="m6 14 6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+            <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 10 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+            <symbol id="i-left" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+            <symbol id="i-right" viewBox="0 0 24 24"><path d="m10 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        </defs>
+    </svg>
 
-    <main>
-        <section class="control-panel">
-            <h2>Scenarios</h2>
-            <div class="graph-meta">
-                <span><strong>8</strong> Nodes</span>
-                <span><strong id="edge-count">-</strong> Edges</span>
-                <span>Engine: <strong>Dijkstra</strong></span>
+    <div class="app">
+        <!-- ============ left tab view ============ -->
+        <nav class="rail" role="tablist" aria-orientation="vertical" aria-label="Views">
+            <div class="brand">
+                <div class="brand-mark"><svg><use href="#i-server" /></svg></div>
+                <div><b>CORVIN</b><small>Rack maintenance robot</small></div>
             </div>
-
-            <button class="scenario-btn active" onclick="triggerScenario('A', this)">
-                Scenario A: Idle / Healthy
-                <span class="btn-desc">No faults. Robot idles at the Dock.</span>
+            <div class="rail-label">Views</div>
+            <button class="tab" role="tab" id="tab-sim" data-tab="sim" aria-selected="true" aria-controls="view-sim">
+                <svg class="ic"><use href="#i-scan" /></svg>
+                <span><b>Detection Simulation</b><small>Map · camera · control</small></span>
             </button>
-            <button class="scenario-btn" onclick="triggerScenario('B', this)">
-                Scenario B: Robot Auto-Fix
-                <span class="btn-desc">Random servers report a component fault. Robot runs Dijkstra to reach and swap each one.</span>
-            </button>
-            <button class="scenario-btn" onclick="triggerScenario('C', this)">
-                Scenario C: Human Assist
-                <span class="btn-desc">Component faults invisible to sensors. Human locates, robot pathfinds to fix.</span>
+            <button class="tab" role="tab" id="tab-dash" data-tab="dash" aria-selected="false" aria-controls="view-dash">
+                <svg class="ic"><use href="#i-chart" /></svg>
+                <span><b>Dashboard</b><small>Weekly · jobs · server log</small></span>
             </button>
 
-            <div class="status-box">
-                <h3>System Logs</h3>
-                <div id="log-output">System initialized. Awaiting scenario selection...</div>
+            <div class="rail-foot">
+                <div class="row"><span>CRN-01</span><span id="rail-mode"></span></div>
+                <div>
+                    <div class="row"><span>Battery</span><span id="rail-batt">100%</span></div>
+                    <div class="meter"><i id="rail-batt-bar" style="width:100%"></i></div>
+                </div>
+                <div class="row"><span>Link</span><span>SIM · local</span></div>
             </div>
-        </section>
+        </nav>
 
-        <section class="simulation-container">
-            <div class="graph-scroll">
-                <div class="graph-area" id="graph-area">
-                    <svg class="network-lines"></svg>
-                    <div id="robot-finder" class="finder" title="Mini-Crane wheeled Robot">🏗️</div>
-                    <div id="human-finder" class="finder" title="Human Operator Assistance">👨‍🔧</div>
-                </div>
-            </div>
+        <main>
+            <!-- ============ DETECTION SIMULATION ============ -->
+            <section class="view" id="view-sim" role="tabpanel" aria-labelledby="tab-sim">
+                <div class="sim">
+                    <div class="sim-left">
+                        <div class="bar">
+                            <div>
+                                <h1 style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">Detection Simulation <span id="mode-pill"></span></h1>
+                                <div class="sub">16 servers · 3 aisles · Dijkstra routing · ArUco = position, barcode = identity</div>
+                            </div>
+                            <div class="tools">
+                                <div class="seg" id="sc-seg" role="group" aria-label="Scenario">
+                                    <button data-sc="A" title="No faults. Robot idles at the dock.">Idle<small>Healthy rack</small></button>
+                                    <button data-sc="B" title="Servers report component faults. Robot runs Dijkstra to reach and swap each one.">Auto-Fix<small>Robot only</small></button>
+                                    <button data-sc="C" title="Component faults invisible to sensors. Human locates, robot pathfinds to fix.">Human Assist<small>Hidden faults</small></button>
+                                </div>
+                                <label class="switch" title="When on, the next automated run stalls mid-route so you can practise the manual takeover.">
+                                    <input type="checkbox" id="chk-fail"><span class="tr"></span> Simulate automation failure
+                                </label>
+                            </div>
+                        </div>
 
-            <div class="legend">
-                <div class="legend-item">
-                    <div class="legend-color" style="background: var(--navy-primary);"></div> Server
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: var(--error-red);"></div> Component Fault
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: #FFFFFF; border: 2px solid var(--navy-primary);"></div> Hidden Component Fault
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: var(--navy-light);"></div> 🏗️ Robot Shortest Path
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: var(--human-amber);"></div> 👨‍🔧 Human Search Path
-                </div>
-            </div>
-        </section>
+                        <div class="card map-card">
+                            <div class="banner" id="banner"></div>
+                            <div class="map-wrap" id="map-wrap">
+                                <div class="map" id="map" role="img" aria-label="Floor plan of the server library: two stacks of servers, three aisles, robot dock at the south cross-aisle">
+                                    <div class="map-hdr" id="map-hdr"></div>
+                                    <div class="grid" id="grid"></div>
+                                </div>
+                            </div>
+                            <div class="legend">
+                                <span class="it"><span class="sw" style="background:#0F1D42"></span>Server OK</span>
+                                <span class="it"><span class="sw" style="background:#3A0F1A;border-color:#B91C1C"></span>Component fault</span>
+                                <span class="it"><span class="sw" style="background:#3A2A07;border-color:#B45309"></span>Being swapped</span>
+                                <span class="it"><span class="sw" style="background:#0F1D42;border-style:dashed;border-color:#B7791F"></span>Suspect (hidden, awaiting inspection)</span>
+                                <span class="it"><span class="sw" style="background:rgba(59,130,246,.4);border-color:#60A5FA"></span>Robot route</span>
+                                <span class="it"><span class="sw" style="background:rgba(245,158,11,.35);border-color:#FBBF24"></span>Human route</span>
+                            </div>
+                        </div>
 
-        <section class="camera-panel">
-            <h2>Camera POV</h2>
-            <div class="camera-viewport" id="camera-viewport">
-                <div class="camera-hud-top">
-                    <span class="rec-dot"></span>
-                    <span id="camera-actor-label">STANDBY</span>
-                    <span id="camera-clock"></span>
+                        <div class="card log-card">
+                            <div class="card-h"><span>System log</span><button class="btn sm" id="btn-clear-log" title="Clears the stored log (also used by the Dashboard)">Clear</button></div>
+                            <div class="log-b" id="sim-log" aria-live="polite"></div>
+                        </div>
+                    </div>
+
+                    <aside class="sim-right" aria-label="Camera, telemetry and manual control">
+                        <div class="card">
+                            <div class="card-h"><span>Camera POV</span><span class="pill" style="font-size:9.5px">synthetic feed</span></div>
+                            <div class="cam" id="cam">
+                                <div class="cam-scene" id="cam-scene"></div>
+                                <div class="cam-top"><span class="rec"></span><span id="cam-who">STANDBY</span><span class="grow"></span><span id="cam-clock"></span></div>
+                                <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+                                <div class="scanline"></div>
+                                <div class="cam-bot">
+                                    <div id="hud-aruco">ArUco: —</div>
+                                    <div id="hud-barcode">BARCODE: —</div>
+                                    <div class="st" id="hud-status">STATUS: —</div>
+                                </div>
+                            </div>
+                            <div class="cap" id="cam-cap">Camera idle — no active feed.</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-h"><span>Robot telemetry</span><span id="t-mode"></span></div>
+                            <div class="card-b">
+                                <dl class="kv">
+                                    <dt>Position</dt><dd id="t-pos">—</dd>
+                                    <dt>Facing</dt><dd id="t-face">—</dd>
+                                    <dt>Link</dt><dd>SIM · local</dd>
+                                </dl>
+                                <div class="kv" style="margin-top:9px;grid-template-columns:1fr auto"><span style="color:var(--dim)">Battery</span><dd id="t-batt" style="text-align:right;font:12px var(--mono);color:#D5E1FF">100%</dd></div>
+                                <div class="meter"><i id="t-batt-bar" style="width:100%"></i></div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-h">
+                                <span>Manual control</span>
+                                <label class="switch"><input type="checkbox" id="chk-manual"><span class="tr"></span> Manual</label>
+                            </div>
+                            <div class="card-b">
+                                <div class="pad" id="pad">
+                                    <span></span>
+                                    <button data-dir="N" aria-label="Forward" title="Forward (W / ↑)"><svg class="ic"><use href="#i-up" /></svg></button>
+                                    <span></span>
+                                    <button data-dir="W" aria-label="Left" title="Left (A / ←)"><svg class="ic"><use href="#i-left" /></svg></button>
+                                    <button class="mid" id="btn-scan" aria-label="Scan ArUco and barcode" title="Scan (Space)">SCAN</button>
+                                    <button data-dir="E" aria-label="Right" title="Right (D / →)"><svg class="ic"><use href="#i-right" /></svg></button>
+                                    <span></span>
+                                    <button data-dir="S" aria-label="Back" title="Back (S / ↓)"><svg class="ic"><use href="#i-down" /></svg></button>
+                                    <span></span>
+                                </div>
+                                <div class="row-btns">
+                                    <button class="btn pri" id="btn-swap" title="Swap the next faulty component on the server in front (E)">Swap part</button>
+                                    <button class="btn danger" id="btn-estop" title="Emergency stop (Esc)">E-STOP</button>
+                                </div>
+                                <div class="row-btns" style="margin-top:8px">
+                                    <button class="btn" id="btn-resume" title="Hand control back to the robot to finish open work orders">Resume auto</button>
+                                    <button class="btn" id="btn-dock" title="Robot drives itself back to the dock">Return to dock</button>
+                                </div>
+                                <p class="hint">
+                                    <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows drive · press toward a shelf to face it · <kbd>Space</kbd> scan · <kbd>E</kbd> swap · <kbd>Esc</kbd> e-stop.<br>
+                                    Gamepad: <span id="pad-status">not detected</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-h"><span>Work orders <span id="wo-count" style="color:var(--dim);margin-left:4px"></span></span><button class="btn sm" id="btn-inject" title="Add 2–3 random visible faults">+ Inject faults</button></div>
+                            <div class="card-b" id="wo-list"></div>
+                        </div>
+                    </aside>
                 </div>
-                <div class="camera-scene" id="camera-scene"></div>
-                <div class="camera-corners">
-                    <span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span>
+            </section>
+
+            <!-- ============ DASHBOARD ============ -->
+            <section class="view" id="view-dash" role="tabpanel" aria-labelledby="tab-dash" hidden>
+                <div class="bar">
+                    <div>
+                        <h1>Dashboard</h1>
+                        <div class="sub">Rack &amp; robot health · mock weekly data blended with live simulation events</div>
+                    </div>
+                    <div class="seg" id="week-seg" role="group" aria-label="Week">
+                        <button class="on" data-w="0">This week</button>
+                        <button data-w="1">Last week</button>
+                    </div>
                 </div>
-                <div class="camera-scanline"></div>
-                <div class="camera-hud-bottom">
-                    <div id="camera-line-aruco">ArUco: —</div>
-                    <div id="camera-line-barcode">BARCODE: —</div>
-                    <div id="camera-line-status">STATUS: —</div>
+
+                <div class="dash">
+                    <article class="card kpi span-3" id="kpi-jobs"></article>
+                    <article class="card kpi span-3" id="kpi-success"></article>
+                    <article class="card kpi span-3" id="kpi-cycle"></article>
+                    <article class="card kpi span-3" id="kpi-faults"></article>
+
+                    <article class="card span-7">
+                        <div class="card-h"><span>Error rate · servers vs robots</span>
+                            <span class="lg"><span><i style="background:#F87171"></i>Servers with a fault</span><span><i style="background:#38BDF8"></i>Robot jobs with an error</span></span>
+                        </div>
+                        <div class="card-b"><div class="chart" id="ch-err"></div></div>
+                    </article>
+
+                    <article class="card span-5">
+                        <div class="card-h"><span>Jobs completed</span><span id="jobs-badge" class="pill"></span></div>
+                        <div class="card-b">
+                            <div class="chart" id="ch-jobs"></div>
+                            <div class="lg" style="margin-top:10px"><span><i style="background:#3B82F6"></i>Auto-fix</span><span><i style="background:#F59E0B"></i>Human assist</span><span><i style="background:#22D3EE"></i>Manual</span></div>
+                        </div>
+                    </article>
+
+                    <article class="card span-4">
+                        <div class="card-h"><span>Faults by hardware category</span></div>
+                        <div class="card-b"><div class="donut-wrap" id="ch-cat"></div></div>
+                    </article>
+
+                    <article class="card span-4">
+                        <div class="card-h"><span>Server fault heatmap</span><span style="color:var(--dim);text-transform:none;letter-spacing:0;font-weight:400">faults / week</span></div>
+                        <div class="card-b">
+                            <div class="heat" id="ch-heat"></div>
+                            <div class="heat-leg"><span>0</span><div class="grad"></div><span id="heat-max">max</span></div>
+                            <div class="heat-note" id="heat-note"></div>
+                        </div>
+                    </article>
+
+                    <article class="card span-4">
+                        <div class="card-h"><span>Robot fleet</span></div>
+                        <div class="card-b" id="ch-fleet"></div>
+                    </article>
+
+                    <article class="card span-12">
+                        <div class="card-h"><span>Server log</span><span style="color:var(--dim);text-transform:none;letter-spacing:0;font-weight:400" id="dlog-meta"></span></div>
+                        <div class="log-tools">
+                            <div class="seg" id="lf-seg" style="padding:2px">
+                                <button class="chipbtn on" data-k="all">All</button>
+                                <button class="chipbtn" data-k="alert">Alerts</button>
+                                <button class="chipbtn" data-k="robot">Robot</button>
+                                <button class="chipbtn" data-k="human">Human</button>
+                                <button class="chipbtn" data-k="ok">Resolved</button>
+                                <button class="chipbtn" data-k="system">System</button>
+                            </div>
+                            <input type="search" id="lf-q" placeholder="Search log…" aria-label="Search log">
+                        </div>
+                        <div class="dlog" id="dlog"></div>
+                    </article>
                 </div>
-            </div>
-            <p class="camera-caption" id="camera-caption">Camera idle — no active feed.</p>
-            <p class="camera-legend">ArUco marker board → slot <b>position</b>. Barcode label → server <b>identity</b>. Synthetic feed, not a live camera.</p>
-        </section>
-    </main>
+                <p class="foot-note">Weekly figures are deterministic mock data. Today's bars, the active-fault count and the server log are live: they come from what you run in the Detection Simulation and are stored in this browser.</p>
+            </section>
+        </main>
+    </div>
 
     <script>
-        // ---------------------------------------------------------------
-        // Graph definition: up to 8 nodes, laid out like a server rack /
-        // library stacks — a robot dock at the aisle entrance, two rows
-        // of server bays on either side of the aisle.
-        // ---------------------------------------------------------------
-        const NODE_DEFS = [
-            { key: 'main', short: 'DOCK',  sub: 'Robot Base',  name: 'Robot Dock', x: 490, y: 580, isDock: true },
-            { key: 'srv1', short: 'SRV-1', sub: 'Rack A · U1', name: 'Server 1',   x: 200, y: 100, serial: 'SN-A1-7734' },
-            { key: 'srv2', short: 'SRV-2', sub: 'Rack A · U2', name: 'Server 2',   x: 200, y: 260, serial: 'SN-A2-8821' },
-            { key: 'srv3', short: 'SRV-3', sub: 'Rack A · U3', name: 'Server 3',   x: 200, y: 420, serial: 'SN-A3-9456' },
-            { key: 'srv4', short: 'SRV-4', sub: 'Rack A · U4', name: 'Server 4',   x: 200, y: 580, serial: 'SN-A4-0213' },
-            { key: 'srv5', short: 'SRV-5', sub: 'Rack B · U1', name: 'Server 5',   x: 780, y: 100, serial: 'SN-B1-5567' },
-            { key: 'srv6', short: 'SRV-6', sub: 'Rack B · U2', name: 'Server 6',   x: 780, y: 260, serial: 'SN-B2-6689' },
-            { key: 'srv7', short: 'SRV-7', sub: 'Rack B · U3', name: 'Server 7',   x: 780, y: 420, serial: 'SN-B3-7742' },
-        ];
+    (() => {
+        'use strict';
 
-        const EDGE_DEFS = [
-            ['main', 'srv4', 4], ['main', 'srv7', 6],
-            ['srv1', 'srv2', 3], ['srv2', 'srv3', 3], ['srv3', 'srv4', 3],
-            ['srv5', 'srv6', 3], ['srv6', 'srv7', 3],
-            ['srv1', 'srv5', 5], ['srv2', 'srv6', 5], ['srv3', 'srv7', 5],
-        ];
+        /* ============================================================
+           Helpers
+        ============================================================ */
+        const $ = (s, r = document) => r.querySelector(s);
+        const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+        const delay = ms => new Promise(r => setTimeout(r, ms));
+        const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+        const pad2 = n => String(n).padStart(2, '0');
+        const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+        const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rand(0, i);[a[i], a[j]] = [a[j], a[i]]; } return a; }
+        function hashStr(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; }
+        function seeded(seed) { let s = (seed >>> 0) || 1; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+        const store = {
+            get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+            set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } },
+        };
 
-        // Every server is built from these components. When a server
-        // reports a fault, exactly one of its components is the cause —
-        // the node represents the server, not the component.
+        /* ============================================================
+           World definition: a library of servers
+           7 columns x 6 rows. Aisles are columns 0, 3, 6; cross-aisles
+           are rows 0 and 5. Two shelf stacks (A: cols 1-2, B: cols 4-5)
+           hold 4 server slots each per face.
+        ============================================================ */
+        const COLS = 7, ROWS = 6;
+        const AISLES = [0, 3, 6];
+        const CROSS = [0, 5];
+        const DOCK = { x: 3, y: 5 };
+        const STACKS = [{ id: 'A', cols: [1, 2] }, { id: 'B', cols: [4, 5] }];
+        const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+        const DELTA = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] };
+        const ROT = { N: 0, E: 90, S: 180, W: 270 };
+
+        const CATS = {
+            compute: { label: 'Compute', color: '#60A5FA' },
+            memory: { label: 'Memory', color: '#A78BFA' },
+            power: { label: 'Power', color: '#FBBF24' },
+            network: { label: 'Network', color: '#22D3EE' },
+            storage: { label: 'Storage', color: '#34D399' },
+            cooling: { label: 'Cooling', color: '#F472B6' },
+        };
         const COMPONENTS = [
-            { key: 'cpu',  name: 'CPU Module' },
-            { key: 'gpu',  name: 'GPU Module' },
-            { key: 'ram',  name: 'RAM Bank' },
-            { key: 'psu',  name: 'PSU' },
-            { key: 'nic',  name: 'NIC / Network Card' },
-            { key: 'disk', name: 'Storage Disk' },
-            { key: 'fan',  name: 'Cooling Fan' },
+            { key: 'cpu', name: 'CPU Module', abbr: 'CPU', cat: 'compute' },
+            { key: 'gpu', name: 'GPU Module', abbr: 'GPU', cat: 'compute' },
+            { key: 'ram', name: 'RAM Bank', abbr: 'RAM', cat: 'memory' },
+            { key: 'psu', name: 'PSU', abbr: 'PSU', cat: 'power' },
+            { key: 'nic', name: 'NIC / Network Card', abbr: 'NIC', cat: 'network' },
+            { key: 'disk', name: 'Storage Disk', abbr: 'DSK', cat: 'storage' },
+            { key: 'fan', name: 'Cooling Fan', abbr: 'FAN', cat: 'cooling' },
         ];
+        const comp = key => COMPONENTS.find(c => c.key === key);
+        const cname = key => comp(key).name;
 
-        function pickComponent() {
-            return COMPONENTS[randInt(0, COMPONENTS.length - 1)];
+        const K = (x, y) => x + ',' + y;
+        const inB = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS;
+        const walk = (x, y) => inB(x, y) && (AISLES.includes(x) || CROSS.includes(y));
+        const stepCost = (x, y) => (CROSS.includes(y) && !AISLES.includes(x)) ? 1.4 : 1;
+
+        const servers = [];
+        const serverAt = {};
+        (() => {
+            let idx = 0;
+            STACKS.forEach(st => st.cols.forEach((col, ci) => {
+                const side = ci === 0 ? 'L' : 'R';
+                for (let row = 1; row <= 4; row++) {
+                    idx++;
+                    const s = {
+                        id: `${st.id}-${side}${row}`, stack: st.id, side, row, x: col, y: row,
+                        sx: side === 'L' ? col - 1 : col + 1,        // aisle cell the robot stands on
+                        approach: side === 'L' ? 'E' : 'W',          // direction the robot faces to see it
+                        serial: `SN-${st.id}${side}${row}-${1000 + ((idx * 7919) % 9000)}`,
+                        aruco: idx, faults: [], inspected: false, suspect: false,
+                    };
+                    servers.push(s); serverAt[K(s.x, s.y)] = s;
+                }
+            }));
+        })();
+        const srvById = Object.fromEntries(servers.map(s => [s.id, s]));
+
+        function cellName(x, y) {
+            if (x === DOCK.x && y === DOCK.y) return 'Dock';
+            if (AISLES.includes(x)) return `Aisle ${AISLES.indexOf(x) + 1} · ${y === 0 ? 'North' : y === 5 ? 'South' : 'Row ' + y}`;
+            return `Cross-aisle ${y === 0 ? 'North' : 'South'} · Col ${x}`;
         }
 
-        // key -> the COMPONENTS entry currently at fault on that server
-        const serverFaults = {};
+        /* ============================================================
+           State
+        ============================================================ */
+        const S = {
+            mode: 'idle', token: 0, running: false, estop: false, stalled: false, stallReason: '', manual: false,
+            tab: 'sim', week: 0, scen: null, camKey: '',
+            robot: { x: DOCK.x, y: DOCK.y, face: 'E', busy: false, battery: 100 },
+            human: { x: DOCK.x, y: DOCK.y, active: false, busy: false },
+        };
+        const alive = t => t === S.token && !S.estop;
 
-        const nodes = {};
-        NODE_DEFS.forEach(n => { n.id = `node-${n.key}`; nodes[n.key] = n; });
+        /* ============================================================
+           Persistent log + live stats
+        ============================================================ */
+        const LOG_KEY = 'corvin.log.v1', STATS_KEY = 'corvin.stats.v1';
+        let LOG = store.get(LOG_KEY, null);
+        let saveTimer = null;
+        const saveLogSoon = () => { clearTimeout(saveTimer); saveTimer = setTimeout(() => store.set(LOG_KEY, LOG.slice(-400)), 250); };
 
-        const adjacency = {};
-        NODE_DEFS.forEach(n => { adjacency[n.key] = []; });
-        EDGE_DEFS.forEach(([a, b, w]) => {
-            adjacency[a].push({ to: b, weight: w });
-            adjacency[b].push({ to: a, weight: w });
-        });
-
-        const edgeElements = {};
-
-        // ---------------------------------------------------------------
-        // Dijkstra's algorithm
-        // ---------------------------------------------------------------
-        function dijkstra(source) {
-            const dist = {}, prev = {}, visited = new Set();
-            Object.keys(adjacency).forEach(k => { dist[k] = Infinity; });
-            dist[source] = 0;
-            const queue = [[0, source]];
-
-            while (queue.length) {
-                queue.sort((a, b) => a[0] - b[0]);
-                const [d, u] = queue.shift();
-                if (visited.has(u)) continue;
-                visited.add(u);
-
-                adjacency[u].forEach(({ to, weight }) => {
-                    const nd = d + weight;
-                    if (nd < dist[to]) {
-                        dist[to] = nd;
-                        prev[to] = u;
-                        queue.push([nd, to]);
+        function seedLog() {
+            const out = [];
+            const now = Date.now();
+            const run = (ago, sc, hits) => {
+                let t = now - ago;
+                const add = (k, m) => { out.push({ t, k, m }); t += 2000 + (hits.length * 100); };
+                add('system', `Scenario ${sc} triggered: ` + (sc === 'B' ? 'injecting random component fault(s) across the rack.' : 'injecting hidden component fault(s), invisible to sensors.'));
+                if (sc === 'B') {
+                    add('alert', `⚠️ ALERT: ${hits.length} server(s) reporting component faults — ${hits.map(h => `Server ${h.id} (${h.c})`).join('; ')}.`);
+                    add('robot', '🧮 Robot sensors online — running Dijkstra shortest-path search across the library layout.');
+                } else {
+                    add('alert', `👤 Anomaly signature detected on ${hits.length + 2} server(s) by external monitoring, but the exact component is invisible to robot sensors.`);
+                    add('human', '🧮 Dispatching Human Operator — inspection order computed via Dijkstra distance from the Dock.');
+                }
+                hits.forEach((h, i) => {
+                    const s = srvById[h.id];
+                    if (sc === 'C') {
+                        add('human', `📡 Human scanned the ArUco marker #${s.aruco} on Server ${h.id} — slot confirmed.`);
+                        add('human', `🏷️ Barcode decoded — ${s.serial} confirmed as Server ${h.id}.`);
+                        add('alert', `🔍 Component fault confirmed: Server ${h.id} — ${h.c}. Radioing coordinates to Crane Robot.`);
                     }
+                    add('robot', `🧮 Shortest path ${i ? 'previous server' : 'Dock'} → Server ${h.id}: ${h.route} (cost ${h.cost})`);
+                    add('robot', `🏗️ Crane Robot en route to Server ${h.id}...`);
+                    add('robot', `📡 Robot arrived at Server ${h.id}. Scanning ArUco marker #${s.aruco} — slot position confirmed.`);
+                    add('robot', `🏷️ Barcode decoded — ${s.serial} confirmed as Server ${h.id}.`);
+                    add('robot', `🔧 Deploying mini-crane hoist — swapping ${h.c} on Server ${h.id}.`);
+                    add('ok', `✅ Server ${h.id} — ${h.c} replaced. Server restored to operational status.`);
                 });
+                add('robot', '🏗️ All component faults resolved. Returning to Dock via shortest route...');
+                add('ok', '✅ All servers operational. Robot idling at Dock.');
+            };
+            run(2 * 86400000 + 3 * 3600000, 'B', [{ id: 'A-R2', c: 'GPU Module', route: '← 3 ↑ 2', cost: '5.8' }, { id: 'B-L4', c: 'Cooling Fan', route: '→ 3 ↓ 2', cost: '6.4' }]);
+            run(86400000 + 2 * 3600000, 'C', [{ id: 'B-R3', c: 'PSU', route: '→ 3 ↑ 2', cost: '7.2' }, { id: 'A-L1', c: 'NIC / Network Card', route: '← 3 ↑ 4', cost: '9.8' }]);
+            run(5 * 3600000, 'B', [{ id: 'A-L3', c: 'Storage Disk', route: '← 3 ↑ 2', cost: '6.8' }]);
+            return out.sort((a, b) => a.t - b.t);
+        }
+        if (!Array.isArray(LOG) || !LOG.length) { LOG = seedLog(); store.set(LOG_KEY, LOG); }
+
+        const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
+        const freshStats = () => ({
+            date: todayKey(), jobs: { auto: 0, human: 0, manual: 0 }, robotJobs: 0, robotErrors: 0, faultServers: 0,
+            faultCats: Object.fromEntries(Object.keys(CATS).map(k => [k, 0])), serverFaults: {},
+        });
+        let live = store.get(STATS_KEY, null);
+        if (!live || live.date !== todayKey()) live = freshStats();
+        const saveStats = () => { store.set(STATS_KEY, live); if (S.tab === 'dash') renderDashboardSoon(); };
+        const bumpJob = mode => { live.jobs[mode]++; live.robotJobs++; saveStats(); };
+        const bumpRobotError = () => { live.robotErrors++; saveStats(); };
+        function bumpFaults(list) {
+            list.forEach(s => {
+                live.faultServers++;
+                live.serverFaults[s.id] = (live.serverFaults[s.id] || 0) + 1;
+                s.faults.forEach(f => { live.faultCats[comp(f.comp).cat]++; });
+            });
+            saveStats();
+        }
+
+        const fmtClock = ts => { const d = new Date(ts); return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`; };
+        function fmtT(ts) {
+            const d = new Date(ts);
+            if (d.toDateString() === new Date().toDateString()) return fmtClock(ts);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + fmtClock(ts);
+        }
+        const simLog = $('#sim-log');
+        function renderSimLog() {
+            simLog.innerHTML = LOG.slice(-70).reverse().map(e => `<div class="ln ${e.k}"><span class="t">${fmtT(e.t)}</span><span class="m">${esc(e.m)}</span></div>`).join('');
+        }
+        function log(msg, kind = 'system') {
+            LOG.push({ t: Date.now(), k: kind, m: msg });
+            if (LOG.length > 500) LOG.splice(0, LOG.length - 500);
+            saveLogSoon(); renderSimLog();
+            if (S.tab === 'dash') renderDashLogSoon();
+        }
+
+        /* ============================================================
+           Map construction + fit
+        ============================================================ */
+        const mapEl = $('#map'), gridEl = $('#grid'), wrapEl = $('#map-wrap'), hdrEl = $('#map-hdr');
+        const tileEls = {}, srvEls = {};
+        let robotEl, humanEl;
+
+        function setXY(el, x, y) { el.style.setProperty('--x', x); el.style.setProperty('--y', y); }
+        function buildMap() {
+            hdrEl.innerHTML = [
+                [0, 1, 'AISLE 1', ''], [1, 2, 'STACK A', 'stack'], [3, 1, 'AISLE 2', ''], [4, 2, 'STACK B', 'stack'], [6, 1, 'AISLE 3', ''],
+            ].map(([c, w, t, k]) => `<div class="hl ${k}" style="--c:${c};--w:${w}">${t}</div>`).join('');
+
+            let html = '';
+            for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+                if (!walk(x, y)) continue;
+                html += `<div class="tile ${AISLES.includes(x) ? 'aisle' : ''} ${CROSS.includes(y) ? 'cross' : ''}" data-k="${K(x, y)}" style="--x:${x};--y:${y}"></div>`;
+            }
+            STACKS.forEach(st => { html += `<div class="shelf" style="--x:${st.cols[0]};--y:1;--w:2;--h:4"></div>`; });
+            servers.forEach(s => {
+                html += `<div class="srv" tabindex="0" data-id="${s.id}" style="--x:${s.x};--y:${s.y}" title="Server ${s.id} · ${s.serial} · ArUco #${s.aruco}">
+                    <div class="srv-card"><svg class="srv-ico"><use href="#i-server"/></svg><span class="srv-id">${s.id}</span><span class="chips"></span></div></div>`;
+            });
+            html += `<div class="dock" style="--x:${DOCK.x};--y:${DOCK.y}"><div class="dock-pad">DOCK</div></div>`;
+            html += `<div class="actor robot" id="robot" style="--ax:${DOCK.x};--ay:${DOCK.y}"><div class="body" style="--rot:90deg"><svg><use href="#i-robot"/></svg></div></div>`;
+            html += `<div class="actor human" id="human" style="--ax:${DOCK.x};--ay:${DOCK.y}"><div class="body"><svg><use href="#i-human"/></svg></div></div>`;
+            gridEl.innerHTML = html;
+
+            $$('.tile', gridEl).forEach(t => { tileEls[t.dataset.k] = t; });
+            $$('.srv', gridEl).forEach(el => {
+                srvEls[el.dataset.id] = el;
+                const act = () => log(`User manual click: Inspecting performance metrics for Server ${el.dataset.id}.`, 'system');
+                el.addEventListener('click', act);
+                el.addEventListener('keydown', e => { if (e.key === 'Enter') act(); });
+            });
+            robotEl = $('#robot'); humanEl = $('#human');
+        }
+
+        function fitMap() {
+            const w = wrapEl.clientWidth - 26, h = wrapEl.clientHeight - 26;
+            if (w <= 0 || h <= 0) return;
+            const cell = clamp(Math.floor(Math.min(w / COLS, (h - 28) / ROWS)), 46, 124);
+            mapEl.style.setProperty('--cell', cell + 'px');
+        }
+        new ResizeObserver(fitMap).observe(wrapEl);
+
+        /* ============================================================
+           Server rendering
+        ============================================================ */
+        function renderServer(s) {
+            const el = srvEls[s.id]; if (!el) return;
+            const shown = s.faults.filter(f => f.revealed);
+            el.classList.toggle('fault', shown.some(f => f.status === 'open'));
+            el.classList.toggle('fixing', shown.some(f => f.status === 'fixing'));
+            el.classList.toggle('suspect', s.suspect);
+            el.classList.toggle('inspected', s.inspected);
+            $('.chips', el).innerHTML = shown.map(f => `<i class="chip ${f.status}">${comp(f.comp).abbr}</i>`).join('');
+        }
+        const renderAllServers = () => servers.forEach(renderServer);
+
+        function burst(s) {
+            const el = srvEls[s.id]; if (!el) return;
+            const b = document.createElement('span'); b.className = 'burst'; b.innerHTML = '<i></i><i></i><i></i><i></i>';
+            $('.srv-card', el).appendChild(b);
+            el.classList.add('scanning');
+            setTimeout(() => { b.remove(); el.classList.remove('scanning'); }, 900);
+        }
+
+        /* ============================================================
+           Pathfinding — Dijkstra over the aisle grid
+        ============================================================ */
+        function dijkstra(sx, sy) {
+            const dist = { [K(sx, sy)]: 0 }, prev = {}, done = new Set(), pq = [[0, sx, sy]];
+            while (pq.length) {
+                pq.sort((a, b) => a[0] - b[0]);
+                const [d, x, y] = pq.shift(), k = K(x, y);
+                if (done.has(k)) continue;
+                done.add(k);
+                for (const [dx, dy] of DIRS) {
+                    const nx = x + dx, ny = y + dy;
+                    if (!walk(nx, ny)) continue;
+                    const nk = K(nx, ny), nd = d + stepCost(nx, ny);
+                    if (nd < (dist[nk] ?? Infinity)) { dist[nk] = nd; prev[nk] = k; pq.push([nd, nx, ny]); }
+                }
             }
             return { dist, prev };
         }
-
-        function getPath(prev, source, target) {
-            if (source === target) return [source];
-            const path = [target];
-            let cur = target;
-            while (cur !== source) {
-                cur = prev[cur];
-                if (cur === undefined) return null;
-                path.unshift(cur);
+        function pathTo(prev, sx, sy, tx, ty) {
+            const sk = K(sx, sy); let k = K(tx, ty); const out = [];
+            if (k !== sk && !(k in prev)) return null;
+            while (k !== sk) { out.unshift(k.split(',').map(Number)); k = prev[k]; }
+            out.unshift([sx, sy]);
+            return out;
+        }
+        function routeSummary(path) {
+            const arrows = { '1,0': '→', '-1,0': '←', '0,1': '↓', '0,-1': '↑' };
+            const parts = []; let last = null, n = 0;
+            for (let i = 1; i < path.length; i++) {
+                const d = (path[i][0] - path[i - 1][0]) + ',' + (path[i][1] - path[i - 1][1]);
+                if (d === last) n++; else { if (last) parts.push(arrows[last] + n); last = d; n = 1; }
             }
-            return path;
+            if (last) parts.push(arrows[last] + n);
+            return parts.join(' ') || '—';
+        }
+        const pathCost = path => path.slice(1).reduce((a, [x, y]) => a + stepCost(x, y), 0);
+        function nearest(from, list) {
+            const { dist, prev } = dijkstra(from.x, from.y);
+            let best = null, bd = Infinity;
+            list.forEach(s => { const d = dist[K(s.sx, s.y)]; if (d < bd) { bd = d; best = s; } });
+            return best ? { srv: best, prev } : null;
         }
 
-        // ---------------------------------------------------------------
-        // DOM / rendering
-        // ---------------------------------------------------------------
-        const robot = document.getElementById('robot-finder');
-        const human = document.getElementById('human-finder');
-        const logOutput = document.getElementById('log-output');
-        const graphArea = document.getElementById('graph-area');
-
-        const cameraViewport = document.getElementById('camera-viewport');
-        const cameraScene = document.getElementById('camera-scene');
-        const cameraActorLabel = document.getElementById('camera-actor-label');
-        const cameraLineAruco = document.getElementById('camera-line-aruco');
-        const cameraLineBarcode = document.getElementById('camera-line-barcode');
-        const cameraLineStatus = document.getElementById('camera-line-status');
-        const cameraCaption = document.getElementById('camera-caption');
-
-        let robotPos = 'main';
-        let humanPos = 'main';
-        let runToken = 0;
-
-        function buildGraph() {
-            const svg = document.querySelector('.network-lines');
-            svg.innerHTML = '';
-            graphArea.querySelectorAll('.node').forEach(n => n.remove());
-
-            EDGE_DEFS.forEach(([a, b, w]) => {
-                const na = nodes[a], nb = nodes[b];
-                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                line.setAttribute('x1', na.x);
-                line.setAttribute('y1', na.y);
-                line.setAttribute('x2', nb.x);
-                line.setAttribute('y2', nb.y);
-                line.setAttribute('class', 'edge-line');
-                svg.appendChild(line);
-                edgeElements[`${a}|${b}`] = line;
-                edgeElements[`${b}|${a}`] = line;
-
-                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                text.setAttribute('x', (na.x + nb.x) / 2);
-                text.setAttribute('y', (na.y + nb.y) / 2 - 4);
-                text.setAttribute('class', 'edge-weight');
-                text.textContent = w;
-                svg.appendChild(text);
-            });
-
-            NODE_DEFS.forEach(n => {
-                const div = document.createElement('div');
-                div.className = 'node' + (n.isDock ? ' dock' : '');
-                div.id = n.id;
-                div.style.left = `${n.x - 40}px`;
-                div.style.top = `${n.y - 40}px`;
-                div.onclick = () => inspectNode(n.name);
-                div.innerHTML = `<span>${n.short}</span><span class="node-label" id="sub-${n.key}">${n.sub}</span>`;
-                graphArea.appendChild(div);
-            });
-
-            // Rack / aisle labels, so the layout reads as a server row
-            // rather than an abstract graph.
-            ['rack-a-label', 'rack-b-label', 'aisle-label'].forEach(id => {
-                const old = document.getElementById(id);
-                if (old) old.remove();
-            });
-            const rackLabels = [
-                { id: 'rack-a-label', text: 'RACK A', x: 200, y: 30 },
-                { id: 'rack-b-label', text: 'RACK B', x: 780, y: 30 },
-                { id: 'aisle-label', text: 'AISLE', x: 490, y: 340 },
-            ];
-            rackLabels.forEach(l => {
-                const div = document.createElement('div');
-                div.id = l.id;
-                div.className = 'rack-label';
-                div.style.left = `${l.x}px`;
-                div.style.top = `${l.y}px`;
-                div.textContent = l.text;
-                graphArea.appendChild(div);
-            });
-
-            document.getElementById('edge-count').textContent = EDGE_DEFS.length;
+        /* ============================================================
+           Actors + movement
+        ============================================================ */
+        const actorOf = who => who === 'robot' ? S.robot : S.human;
+        const elOf = who => who === 'robot' ? robotEl : humanEl;
+        function placeActor(who, x, y, dur) {
+            const a = actorOf(who), el = elOf(who);
+            a.x = x; a.y = y;
+            el.style.setProperty('--dur', dur + 'ms');
+            el.style.setProperty('--ax', x); el.style.setProperty('--ay', y);
         }
+        function setFace(f) { S.robot.face = f; robotEl.firstElementChild.style.setProperty('--rot', ROT[f] + 'deg'); }
+        const frontServer = () => { const d = DELTA[S.robot.face]; return serverAt[K(S.robot.x + d[0], S.robot.y + d[1])] || null; };
 
-        function moveActor(actor, x, y) {
-            actor.style.left = `${x}px`;
-            actor.style.top = `${y}px`;
-        }
+        function markTrail(who, x, y) { const t = tileEls[K(x, y)]; if (t) t.classList.add(who === 'robot' ? 'trail-r' : 'trail-h'); }
+        function clearTrail(who) { Object.values(tileEls).forEach(t => t.classList.remove(who === 'robot' ? 'trail-r' : 'trail-h')); }
 
-        function resetToHome() {
-            robot.style.transitionDuration = '';
-            human.style.transitionDuration = '';
-            moveActor(robot, nodes.main.x, nodes.main.y);
-            moveActor(human, nodes.main.x, nodes.main.y);
-        }
-
-        function setEdgeActive(a, b, cls, on) {
-            const el = edgeElements[`${a}|${b}`];
-            if (el) el.classList.toggle(cls, on);
-        }
-
-        function clearPathHighlight() {
-            Object.values(edgeElements).forEach(el => el.classList.remove('path-robot', 'path-human'));
-        }
-
-        function resetGraphVisual() {
-            document.querySelectorAll('.node').forEach(n => {
-                n.classList.remove('error', 'hidden-error', 'fixed-flash', 'fault-label');
-            });
-            Object.keys(serverFaults).forEach(k => restoreServerLabel(k));
-            for (const k in serverFaults) delete serverFaults[k];
-            clearPathHighlight();
-            human.style.display = 'none';
-        }
-
-        // Swap a server's sub-label to show the specific failed component
-        // (used instead of an abstract "error" state, since the node is a
-        // whole server and the fault is one part inside it).
-        function setServerFaultLabel(key, component) {
-            serverFaults[key] = component;
-            const sub = document.getElementById(`sub-${key}`);
-            if (sub) sub.textContent = `⚠ ${component.name}`;
-            document.getElementById(nodes[key].id).classList.add('fault-label');
-        }
-
-        function restoreServerLabel(key) {
-            const sub = document.getElementById(`sub-${key}`);
-            if (sub) sub.textContent = nodes[key].sub;
-            const el = document.getElementById(nodes[key].id);
-            if (el) el.classList.remove('fault-label');
-            delete serverFaults[key];
-        }
-
-        // Small camera capture detail — a viewfinder frame + shutter badge
-        // over the node, shown whenever a camera scans its ArUco board.
-        function showCameraFlash(key) {
-            const n = nodes[key];
-            const el = document.getElementById(n.id);
-            if (el) el.classList.add('camera-scan');
-
-            const frame = document.createElement('div');
-            frame.className = 'camera-frame';
-            frame.style.left = `${n.x}px`;
-            frame.style.top = `${n.y}px`;
-            frame.innerHTML = '<span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span>';
-            graphArea.appendChild(frame);
-
-            const badge = document.createElement('div');
-            badge.className = 'camera-badge';
-            badge.textContent = '📷';
-            badge.style.left = `${n.x + 34}px`;
-            badge.style.top = `${n.y - 34}px`;
-            graphArea.appendChild(badge);
-
-            setTimeout(() => {
-                if (el) el.classList.remove('camera-scan');
-                frame.remove();
-                badge.remove();
-            }, 900);
-        }
-
-        // ---------------------------------------------------------------
-        // Camera POV sidebar — synthetic (illustrated, not photographic)
-        // stills for each situation: idle, in transit, arrived at a bay
-        // (fault or clear), mid-repair, verified. ArUco marker board and
-        // barcode label are drawn with a small deterministic hash so the
-        // same server always shows the same "fingerprint" pattern.
-        // ---------------------------------------------------------------
-        function hashStr(s) {
-            let h = 0;
-            for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-            return h;
-        }
-
-        function seededRandom(seed) {
-            let s = seed || 1;
-            return function () {
-                s = (s * 1103515245 + 12345) >>> 0;
-                return (s >>> 8) / 0xFFFFFF;
-            };
-        }
-
-        function barcodeBars(serial) {
-            const rnd = seededRandom(hashStr(serial));
-            const bars = [];
-            let total = 0;
-            while (total < 168) {
-                const w = 2 + Math.floor(rnd() * 6);
-                bars.push(w);
-                total += w + 2;
+        async function stepTo(who, x, y, dur) {
+            const a = actorOf(who);
+            if (who === 'robot') {
+                const dx = x - a.x, dy = y - a.y;
+                setFace(dx > 0 ? 'E' : dx < 0 ? 'W' : dy > 0 ? 'S' : 'N');
+                S.robot.battery = clamp(S.robot.battery - 0.12, 4, 100);
             }
-            return bars;
+            markTrail(who, a.x, a.y);
+            placeActor(who, x, y, dur);
+            markTrail(who, x, y);
+            updatePos();
+            await delay(dur + 15);
         }
-
-        function arucoGrid(seed) {
-            const rnd = seededRandom(hashStr(seed + '-aruco'));
-            const grid = [];
-            for (let r = 0; r < 5; r++) {
-                const row = [];
-                for (let c = 0; c < 5; c++) {
-                    row.push((r === 0 || r === 4 || c === 0 || c === 4) ? true : rnd() > 0.5);
+        async function followPath(who, path, t, o = {}) {
+            const a = actorOf(who);
+            a.busy = true;
+            try {
+                for (let i = 1; i < path.length; i++) {
+                    if (!alive(t)) return 'cancelled';
+                    if (o.failAt === i) return 'stalled';
+                    await stepTo(who, path[i][0], path[i][1], o.dur || 170);
                 }
-                grid.push(row);
+                return alive(t) ? 'ok' : 'cancelled';
+            } finally { a.busy = false; }
+        }
+        async function goDock(who, t) {
+            const a = actorOf(who);
+            if (a.x === DOCK.x && a.y === DOCK.y) return 'ok';
+            const { prev } = dijkstra(a.x, a.y);
+            return followPath(who, pathTo(prev, a.x, a.y, DOCK.x, DOCK.y), t);
+        }
+
+        /* ============================================================
+           Camera POV — synthetic scenes
+        ============================================================ */
+        const camEl = $('#cam'), camScene = $('#cam-scene'), camWho = $('#cam-who'), hudA = $('#hud-aruco'), hudB = $('#hud-barcode'), hudS = $('#hud-status'), camCap = $('#cam-cap');
+        setInterval(() => { $('#cam-clock').textContent = fmtClock(Date.now()); }, 1000);
+
+        function arucoMarker(seed, x, y, size) {
+            const rnd = seeded(hashStr(seed + '#aruco')), c = size / 9;
+            let g = `<rect x="${x}" y="${y}" width="${size}" height="${size}" fill="#F8FAFC" rx="1.5"/>`;
+            for (let r = 0; r < 7; r++) for (let q = 0; q < 7; q++) {
+                const on = (r === 0 || q === 0 || r === 6 || q === 6) || rnd() > .5;
+                if (on) g += `<rect x="${(x + c * (q + 1)).toFixed(2)}" y="${(y + c * (r + 1)).toFixed(2)}" width="${c.toFixed(2)}" height="${c.toFixed(2)}" fill="#0B1020"/>`;
             }
-            return grid;
+            return g;
+        }
+        function barcodeBars(serial, x, y, w, h) {
+            const rnd = seeded(hashStr(serial)); let px = x, g = '';
+            while (px < x + w - 3) {
+                const bw = 1 + Math.floor(rnd() * 2.6);
+                g += `<rect x="${px.toFixed(1)}" y="${y}" width="${bw}" height="${h}" fill="#0B1020"/>`;
+                px += bw + 1 + Math.floor(rnd() * 2);
+            }
+            return g;
+        }
+        const TILE = {
+            unknown: { f: '#17244A', s: '#2B427F', t: '#7C8FBC' },
+            ok: { f: '#0B3B2E', s: '#10B981', t: '#6EE7B7' },
+            fault: { f: '#4A1220', s: '#EF4444', t: '#FCA5A5' },
+            fixing: { f: '#4A3208', s: '#F59E0B', t: '#FCD34D' },
+        };
+        function tileState(s, c, stage) {
+            if (stage === 'unscanned' || stage === 'scanning' || stage === 'blur') return 'unknown';
+            const f = s.faults.find(x => x.comp === c.key);
+            if (!f) return 'ok';
+            return f.status === 'open' ? 'fault' : f.status === 'fixing' ? 'fixing' : 'ok';
         }
 
         function sceneIdle() {
-            return `<svg viewBox="0 0 260 160" preserveAspectRatio="xMidYMid slice">
-                <rect width="260" height="160" fill="#0B1220"/>
-                <circle cx="130" cy="78" r="28" fill="none" stroke="#334155" stroke-width="3"/>
-                <circle cx="130" cy="78" r="11" fill="#334155"/>
-                <text x="130" y="130" text-anchor="middle" fill="#64748B" font-size="11" font-family="'Courier New',monospace" letter-spacing="3">STANDBY</text>
-            </svg>`;
+            let g = '';
+            for (let i = 1; i < 16; i++) g += `<line x1="${i * 20}" y1="0" x2="${i * 20}" y2="200" stroke="#0C1736" stroke-width="1"/>`;
+            for (let i = 1; i < 10; i++) g += `<line x1="0" y1="${i * 20}" x2="320" y2="${i * 20}" stroke="#0C1736" stroke-width="1"/>`;
+            return `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice"><rect width="320" height="200" fill="#050914"/>${g}
+                <circle cx="160" cy="92" r="32" fill="none" stroke="#1E3366" stroke-width="3"/><circle cx="160" cy="92" r="13" fill="#1E3366"/>
+                <circle cx="152" cy="85" r="3.5" fill="#33508F"/>
+                <text x="160" y="150" text-anchor="middle" fill="#5C6C92" font-size="11" font-family="monospace" letter-spacing="4">STANDBY</text></svg>`;
         }
-
-        function sceneTravel() {
-            let posts = '';
-            for (let i = 0; i < 7; i++) posts += `<rect x="${i * 42 - 16}" y="18" width="9" height="120" fill="#1E293B"/>`;
-            return `<svg viewBox="0 0 260 160" preserveAspectRatio="xMidYMid slice">
-                <rect width="260" height="160" fill="#0B1220"/>
-                <g opacity="0.85">${posts}</g>
-                <line x1="0" y1="140" x2="260" y2="140" stroke="#1E3A8A" stroke-width="3" stroke-dasharray="10 8"/>
-                <text x="130" y="150" text-anchor="middle" fill="#93C5FD" font-size="9" font-family="'Courier New',monospace" letter-spacing="1">RAIL TRACKING — ARUCO</text>
-            </svg>`;
-        }
-
-        function sceneBay({ shortName, serial, ledColor, faultText }) {
-            const bars = barcodeBars(serial);
-            let barcodeSvg = '';
-            let bx = 40;
-            bars.forEach(w => {
-                barcodeSvg += `<rect x="${bx}" y="120" width="${w}" height="24" fill="#0F172A"/>`;
-                bx += w + 2;
+        function sceneAisle(o = {}) {
+            const bad = o.lost || o.estop;
+            const xs = [0, 14, 40, 66, 90, 110];
+            let walls = '', leds = '';
+            xs.slice(1, 5).forEach(x => {
+                const yt = 62 * (x / 110), yb = 200 - yt;
+                walls += `<line x1="${x}" y1="${yt}" x2="${x}" y2="${yb}" stroke="#1E3366"/><line x1="${320 - x}" y1="${yt}" x2="${320 - x}" y2="${yb}" stroke="#1E3366"/>`;
             });
-
-            const grid = arucoGrid(shortName);
-            let arucoSvg = '';
-            const cell = 6;
-            grid.forEach((row, ry) => row.forEach((on, rx) => {
-                if (on) arucoSvg += `<rect x="${188 + rx * cell}" y="${18 + ry * cell}" width="${cell}" height="${cell}" fill="#0F172A"/>`;
-            }));
-
-            return `<svg viewBox="0 0 260 160" preserveAspectRatio="xMidYMid slice">
-                <rect width="260" height="160" fill="#111827"/>
-                <rect x="20" y="16" width="220" height="128" rx="4" fill="#1E293B" stroke="#334155" stroke-width="2"/>
-                <circle cx="36" cy="32" r="6" fill="${ledColor}"/>
-                <text x="130" y="72" text-anchor="middle" fill="#E2E8F0" font-size="20" font-weight="bold" font-family="'Courier New',monospace">${shortName}</text>
-                <text x="130" y="92" text-anchor="middle" fill="${faultText ? '#FCA5A5' : '#6EE7B7'}" font-size="9.5" font-family="'Courier New',monospace">${faultText || 'NOMINAL'}</text>
-                <rect x="186" y="16" width="34" height="34" fill="#F8FAFC"/>
-                ${arucoSvg}
-                <rect x="38" y="118" width="${bx - 38}" height="28" fill="#F8FAFC"/>
-                ${barcodeSvg}
-            </svg>`;
+            for (let i = 0; i < xs.length - 1; i++) {
+                const cx = (xs[i] + xs[i + 1]) / 2, k = cx / 110, yt = 62 * k, yb = 200 - yt, r = 1 + (1 - k) * 1.6;
+                [.34, .5, .66].forEach((p, j) => {
+                    const col = (i + j) % 4 === 0 ? '#F59E0B' : '#22C55E', y = yt + (yb - yt) * p;
+                    leds += `<circle cx="${cx}" cy="${y}" r="${r}" fill="${col}" opacity=".85"/><circle cx="${320 - cx}" cy="${y}" r="${r}" fill="${col}" opacity=".85"/>`;
+                });
+            }
+            const end = bad
+                ? `<rect x="146" y="86" width="28" height="28" fill="none" stroke="#EF4444" stroke-width="1.6" stroke-dasharray="3 3"/><path d="M150 90l20 20M170 90l-20 20" stroke="#EF4444" stroke-width="2"/>`
+                : arucoMarker('aisle-end', 145, 85, 30);
+            return `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice"><rect width="320" height="200" fill="#050914"/>
+                <polygon points="0,0 320,0 210,62 110,62" fill="#070D1E"/><polygon points="0,200 320,200 210,138 110,138" fill="#091230"/>
+                <polygon points="0,0 110,62 110,138 0,200" fill="#0C1836" stroke="#1E3366"/><polygon points="320,0 210,62 210,138 320,200" fill="#0C1836" stroke="#1E3366"/>
+                ${walls}${leds}<rect x="110" y="62" width="100" height="76" fill="#0A1432" stroke="#1E3366"/>${end}
+                <line class="${bad ? '' : 'flow'}" x1="160" y1="200" x2="160" y2="138" stroke="#2B4FA8" stroke-width="2"/>
+                ${bad ? '<rect width="320" height="200" fill="#EF4444" opacity=".07"/>' : ''}</svg>`;
+        }
+        function sceneBay(s, stage, extra = {}) {
+            const tiles = COMPONENTS.map((c, i) => {
+                const k = TILE[tileState(s, c, stage)], x = 80 + i * 31;
+                return `<rect x="${x}" y="46" width="28" height="22" rx="3" fill="${k.f}" stroke="${k.s}" stroke-width="1.5"/><text x="${x + 14}" y="60" text-anchor="middle" font-size="8" font-weight="700" fill="${k.t}" font-family="monospace">${c.abbr}</text>`;
+            }).join('');
+            let bays = '';
+            for (let r = 0; r < 2; r++) for (let i = 0; i < 4; i++) bays += `<rect x="${80 + i * 38}" y="${84 + r * 18}" width="33" height="13" rx="2" fill="#0A1226" stroke="#1E3366"/><circle cx="${86 + i * 38}" cy="${90.5 + r * 18}" r="1.4" fill="#33508F"/>`;
+            const anyOpen = s.faults.some(f => f.revealed && f.status === 'open');
+            const led = (stage === 'repair' || s.faults.some(f => f.status === 'fixing')) ? '#F59E0B' : (anyOpen && stage !== 'unscanned' && stage !== 'scanning') ? '#EF4444' : '#22C55E';
+            const blur = stage === 'blur';
+            return `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice"><defs><filter id="bl"><feGaussianBlur stdDeviation="1.7"/></filter></defs>
+                <rect width="320" height="200" fill="#070C1B"/>
+                <rect x="6" y="14" width="56" height="172" rx="4" fill="#0B1430" stroke="#1B2D5C"/>
+                ${arucoMarker('slot' + s.aruco, 12, 26, 44)}
+                <text x="34" y="86" text-anchor="middle" fill="#7C9BE0" font-size="8" font-family="monospace">ArUco #${s.aruco}</text>
+                <rect x="70" y="20" width="244" height="160" rx="6" fill="#0D1730" stroke="#26407F" stroke-width="1.5"/>
+                <text x="80" y="37" fill="#9DB2E6" font-size="10" font-weight="700" font-family="monospace">SERVER ${s.id}</text>
+                <circle cx="296" cy="32" r="5" fill="${led}"/>
+                ${tiles}${bays}
+                <g ${blur ? 'filter="url(#bl)"' : ''}><rect x="214" y="126" width="92" height="48" rx="3" fill="#F1F5F9"/>${barcodeBars(s.serial, 220, 131, 80, 26)}<text x="260" y="168" text-anchor="middle" font-size="7" font-family="monospace" fill="#0B1020">${s.serial}</text></g>
+                ${blur ? '<text x="260" y="116" text-anchor="middle" font-size="8" font-weight="700" fill="#FCA5A5" font-family="monospace">LABEL UNREADABLE</text>' : ''}
+                ${stage === 'repair' && extra.comp ? '<path d="M150 6v14" stroke="#F59E0B" stroke-width="3"/><rect x="138" y="2" width="24" height="8" rx="2" fill="#F59E0B"/>' : ''}
+                </svg>`;
         }
 
-        function setCameraIdle() {
-            cameraScene.innerHTML = sceneIdle();
-            cameraActorLabel.textContent = 'STANDBY';
-            cameraLineAruco.textContent = 'ArUco: —';
-            cameraLineBarcode.textContent = 'BARCODE: —';
-            cameraLineStatus.textContent = 'STATUS: —';
-            cameraCaption.textContent = 'Camera idle — no active feed.';
-            cameraViewport.classList.remove('live', 'fault');
+        function camSet({ scene, who = 'robot', whoText, a = '—', b = '—', s = '—', bad = false, live: lv = true, cap }) {
+            camScene.innerHTML = scene;
+            camWho.textContent = whoText || (who === 'human' ? 'HUMAN CAM' : who === 'manual' ? 'ROBOT CAM · MANUAL' : 'ROBOT CAM');
+            hudA.textContent = 'ArUco: ' + a; hudB.textContent = 'BARCODE: ' + b; hudS.textContent = 'STATUS: ' + s;
+            camEl.classList.toggle('bad', bad); camEl.classList.toggle('live', lv);
+            if (cap !== undefined) camCap.textContent = cap;
         }
-
-        function setCameraTravel(actor) {
-            cameraScene.innerHTML = sceneTravel();
-            cameraActorLabel.textContent = actor === 'human' ? '👨‍🔧 HUMAN CAM' : '🏗️ ROBOT CAM';
-            cameraLineAruco.textContent = 'ArUco: TRACKING RAIL MARKERS';
-            cameraLineBarcode.textContent = 'BARCODE: —';
-            cameraLineStatus.textContent = 'STATUS: IN TRANSIT';
-            cameraCaption.textContent = `${actor === 'human' ? 'Human operator' : 'Robot'} en route — coarse position via ArUco rail tracking.`;
-            cameraViewport.classList.add('live');
-            cameraViewport.classList.remove('fault');
+        function camIdle() { S.camKey = ''; camSet({ scene: sceneIdle(), whoText: 'STANDBY', live: false, cap: 'Camera idle — no active feed.' }); }
+        function camTravel(who) {
+            if (who === 'human' && S.robot.busy) return;
+            S.camKey = '';
+            camSet({ scene: sceneAisle(), who: S.manual ? 'manual' : who, a: 'TRACKING RAIL MARKERS', s: 'IN TRANSIT', cap: `${who === 'human' ? 'Human operator' : 'Robot'} en route — coarse position via ArUco rail tracking.` });
         }
-
-        function setCameraArrive(actor, key, opts = {}) {
-            const n = nodes[key];
-            const fault = opts.fault || null;
-            const ledColor = fault ? '#EF4444' : '#10B981';
-            cameraScene.innerHTML = sceneBay({
-                shortName: n.short, serial: n.serial, ledColor,
-                faultText: fault ? `FAULT: ${fault.name}` : null,
+        function camBay(s, stage, who = 'robot', extra = {}) {
+            const faults = s.faults.filter(f => f.revealed);
+            const open = faults.filter(f => f.status !== 'fixed');
+            const list = open.map(f => cname(f.comp)).join(', ');
+            const scanned = stage === 'scanned' || stage === 'repair' || stage === 'verified';
+            camSet({
+                scene: sceneBay(s, stage, extra), who: S.manual && who === 'robot' ? 'manual' : who,
+                a: scanned ? `LOCKED #${s.aruco} — slot confirmed` : 'ACQUIRING…',
+                b: stage === 'blur' ? 'UNREADABLE — RETRY' : scanned ? `${s.serial} DECODED` : stage === 'scanning' ? 'READING…' : '—',
+                s: stage === 'unscanned' ? 'AWAITING SCAN' : stage === 'scanning' || stage === 'blur' ? 'SCANNING…'
+                    : stage === 'repair' ? `REPAIRING — ${extra.comp ? cname(extra.comp.comp) : ''}`
+                        : stage === 'verified' ? 'VERIFY PASS' : open.length ? `FAULT — ${list}` : 'NOMINAL',
+                bad: (stage === 'scanned' && open.length > 0) || stage === 'repair' || stage === 'blur',
+                cap: stage === 'verified' ? `Server ${s.id} restored — component swap verified.`
+                    : stage === 'repair' ? `Hoist engaged — swapping ${extra.comp ? cname(extra.comp.comp) : 'component'} on Server ${s.id}.`
+                        : stage === 'scanned' ? (open.length ? `Server ${s.id} — ${open.length} component fault(s) confirmed by camera.` : `Server ${s.id} — inspected, no fault found.`)
+                            : stage === 'blur' ? 'Barcode label glare detected — re-focusing.' : `Server ${s.id} in view — scan to read ArUco + barcode.`,
             });
-            cameraActorLabel.textContent = actor === 'human' ? '👨‍🔧 HUMAN CAM' : '🏗️ ROBOT CAM';
-            cameraLineAruco.textContent = `ArUco: LOCKED — ${n.name} slot confirmed`;
-            cameraLineBarcode.textContent = `BARCODE: ${n.serial} DECODED`;
-            cameraLineStatus.textContent = fault ? `STATUS: FAULT — ${fault.name}` : 'STATUS: NOMINAL';
-            cameraCaption.textContent = fault
-                ? `${n.name} — component fault confirmed by camera.`
-                : `${n.name} — inspected, no fault found.`;
-            cameraViewport.classList.add('live');
-            cameraViewport.classList.toggle('fault', !!fault);
         }
-
-        function setCameraRepair(key) {
-            const n = nodes[key];
-            const c = serverFaults[key];
-            cameraScene.innerHTML = sceneBay({
-                shortName: n.short, serial: n.serial, ledColor: '#F59E0B',
-                faultText: `SWAPPING: ${c ? c.name : '—'}`,
+        function camLost(reason, estop) {
+            S.camKey = '';
+            camSet({
+                scene: sceneAisle({ lost: !estop, estop }), whoText: estop ? 'E-STOP' : 'ROBOT CAM',
+                a: estop ? 'HOLD' : 'NO LOCK', b: '—', s: estop ? 'MOTION INHIBITED' : 'TRACKING LOST — ' + reason, bad: true,
+                cap: estop ? 'Emergency stop engaged.' : 'Automation halted. Take manual control to continue.',
             });
-            cameraLineStatus.textContent = `STATUS: REPAIRING — ${c ? c.name : ''}`;
-            cameraCaption.textContent = `Hoist engaged — swapping ${c ? c.name : 'component'} on ${n.name}.`;
-            cameraViewport.classList.add('live', 'fault');
+        }
+        function manualCam() {
+            const sv = frontServer();
+            const key = `${S.robot.x},${S.robot.y},${S.robot.face},${sv ? sv.id + sv.inspected : '-'}`;
+            if (key === S.camKey) return;
+            S.camKey = key;
+            if (sv) camBay(sv, sv.inspected ? 'scanned' : 'unscanned', 'robot'); else { S.camKey = key; camSet({ scene: sceneAisle(), who: 'manual', a: 'TRACKING RAIL MARKERS', s: 'MANUAL DRIVE', cap: 'Manual drive — press toward a shelf to face a server.' }); }
         }
 
-        function setCameraVerify(key) {
-            const n = nodes[key];
-            cameraScene.innerHTML = sceneBay({ shortName: n.short, serial: n.serial, ledColor: '#10B981', faultText: null });
-            cameraLineAruco.textContent = `ArUco: LOCKED — ${n.name} slot confirmed`;
-            cameraLineBarcode.textContent = `BARCODE: ${n.serial} DECODED`;
-            cameraLineStatus.textContent = 'STATUS: VERIFY PASS';
-            cameraCaption.textContent = `${n.name} restored — component swap verified.`;
-            cameraViewport.classList.add('live');
-            cameraViewport.classList.remove('fault');
-        }
-
-        function log(message) {
-            const timestamp = new Date().toLocaleTimeString();
-            logOutput.innerHTML = `[${timestamp}] ${message}<br>` + logOutput.innerHTML;
-        }
-
-        function inspectNode(name) {
-            log(`User manual click: Inspecting performance metrics for ${name}.`);
-        }
-
-        function setButtonsDisabled(disabled) {
-            document.querySelectorAll('.scenario-btn').forEach(btn => { btn.disabled = disabled; });
-        }
-
-        function delay(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        function randInt(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        }
-
-        function pickErrorNodes(count) {
-            const pool = NODE_DEFS.filter(n => n.key !== 'main').map(n => n.key);
-            const picked = [];
-            while (picked.length < count && pool.length) {
-                picked.push(pool.splice(randInt(0, pool.length - 1), 1)[0]);
-            }
-            return picked;
-        }
-
-        // Animate an actor hop-by-hop along a Dijkstra-computed path,
-        // highlighting each traversed edge as it goes.
-        async function moveAlongPath(actor, path, token, pathClass) {
-            for (let i = 1; i < path.length; i++) {
-                if (token !== runToken) return false;
-                const fromKey = path[i - 1];
-                const toKey = path[i];
-                const edge = adjacency[fromKey].find(e => e.to === toKey);
-                const weight = edge ? edge.weight : 1;
-                const duration = 400 + weight * 120;
-
-                actor.style.transitionDuration = `${duration}ms`;
-                setEdgeActive(fromKey, toKey, pathClass, true);
-                moveActor(actor, nodes[toKey].x, nodes[toKey].y);
-                await delay(duration + 100);
-            }
-            actor.style.transitionDuration = '';
-            return token === runToken;
-        }
-
-        // ---------------------------------------------------------------
-        // Scenario B: Robot Auto-Fix — all faults visible, robot repeatedly
-        // recomputes Dijkstra from its current position to the nearest
-        // remaining fault.
-        // ---------------------------------------------------------------
-        async function runScenarioB(token) {
-            const errorKeys = pickErrorNodes(randInt(2, 3));
-            errorKeys.forEach(k => {
-                document.getElementById(nodes[k].id).classList.add('error');
-                setServerFaultLabel(k, pickComponent());
+        /* ============================================================
+           Faults, scanning and swapping
+        ============================================================ */
+        function injectFaults({ revealed, n = [2, 3] }) {
+            const pool = shuffle(servers.filter(s => s.faults.length === 0));
+            const chosen = pool.slice(0, Math.min(pool.length, rand(n[0], n[1])));
+            chosen.forEach(s => {
+                s.faults = shuffle(COMPONENTS).slice(0, rand(1, 3)).map(c => ({ comp: c.key, sev: Math.random() < .35 ? 'critical' : 'warning', revealed, status: 'open' }));
             });
-            log(`⚠️ ALERT: ${errorKeys.length} server(s) reporting a component fault — ${errorKeys.map(k => `${nodes[k].name} (${serverFaults[k].name})`).join(', ')}.`);
-            log('🧮 Robot sensors online — running Dijkstra shortest-path search across the rack layout.');
-
-            const remaining = [...errorKeys];
-            while (remaining.length) {
-                if (token !== runToken) return;
-                const { dist, prev } = dijkstra(robotPos);
-                remaining.sort((a, b) => dist[a] - dist[b]);
-                const target = remaining.shift();
-                const path = getPath(prev, robotPos, target);
-
-                log(`🧮 Shortest path ${nodes[robotPos].name} → ${nodes[target].name}: ${path.map(k => nodes[k].short).join(' → ')} (cost ${dist[target]})`);
-                log(`🏗️ Crane Robot en route to ${nodes[target].name}...`);
-                setCameraTravel('robot');
-
-                const ok = await moveAlongPath(robot, path, token, 'path-robot');
-                if (!ok) return;
-                robotPos = target;
-
-                const faultyComponent = serverFaults[target];
-                log(`📡 Robot arrived at ${nodes[target].name}. Scanning ArUco marker board — slot position confirmed.`);
-                log(`🏷️ Barcode decoded — ${nodes[target].serial} confirmed as ${nodes[target].name}.`);
-                setCameraArrive('robot', target, { fault: faultyComponent });
-                showCameraFlash(target);
-                await delay(400);
-                if (token !== runToken) return;
-                log(`🔧 Deploying mini-crane hoist — swapping ${faultyComponent.name}.`);
-                setCameraRepair(target);
-                await delay(500);
-                if (token !== runToken) return;
-
-                const el = document.getElementById(nodes[target].id);
-                el.classList.remove('error');
-                el.classList.add('fixed-flash');
-                setTimeout(() => el.classList.remove('fixed-flash'), 1000);
-                log(`✅ ${nodes[target].name} — ${faultyComponent.name} replaced. Server restored to operational status.`);
-                setCameraVerify(target);
-                restoreServerLabel(target);
-                clearPathHighlight();
-            }
-
-            if (token !== runToken) return;
-            if (robotPos !== 'main') {
-                const { prev } = dijkstra(robotPos);
-                const homePath = getPath(prev, robotPos, 'main');
-                log('🏗️ All component faults resolved. Returning to Dock via shortest route...');
-                setCameraTravel('robot');
-                const ok = await moveAlongPath(robot, homePath, token, 'path-robot');
-                if (ok) robotPos = 'main';
-                clearPathHighlight();
-            }
-            if (token === runToken) { log('✅ All servers operational. Robot idling at Dock.'); setCameraIdle(); }
+            bumpFaults(chosen);
+            renderAllServers(); renderOrders(); updateHud();
+            return chosen;
         }
+        const openFaults = s => s.faults.filter(f => f.revealed && f.status === 'open');
+        const compNames = s => s.faults.map(f => cname(f.comp)).join(', ');
 
-        // ---------------------------------------------------------------
-        // Scenario C: Human Assist — faults hidden from robot sensors.
-        // Human searches nodes in Dijkstra-distance order from Main,
-        // flagging faults as found; robot concurrently pathfinds to
-        // whatever has been flagged so far.
-        // ---------------------------------------------------------------
-        async function runScenarioC(token) {
-            human.style.display = 'flex';
-            const errorKeys = pickErrorNodes(randInt(2, 3));
-            errorKeys.forEach(k => {
-                document.getElementById(nodes[k].id).classList.add('hidden-error');
-                serverFaults[k] = pickComponent();
-            });
-            log('👤 Anomaly signature detected, but exact server/component is invisible to robot sensors.');
-            log('🧮 Dispatching Human Operator — inspection order computed via Dijkstra distance from the Dock.');
-
-            const { dist: distFromMain } = dijkstra('main');
-            const searchOrder = NODE_DEFS.map(n => n.key)
-                .filter(k => k !== 'main')
-                .sort((a, b) => distFromMain[a] - distFromMain[b]);
-
-            const pending = [];
-            let humanSearching = true;
-            let foundCount = 0;
-
-            async function humanLoop() {
-                for (const key of searchOrder) {
-                    if (token !== runToken) return;
-                    if (foundCount >= errorKeys.length) break;
-
-                    const { prev } = dijkstra(humanPos);
-                    const path = getPath(prev, humanPos, key);
-                    if (path && path.length > 1) {
-                        setCameraTravel('human');
-                        const ok = await moveAlongPath(human, path, token, 'path-human');
-                        if (!ok) return;
-                    }
-                    humanPos = key;
-                    if (token !== runToken) return;
-
-                    if (errorKeys.includes(key)) {
-                        foundCount++;
-                        const el = document.getElementById(nodes[key].id);
-                        el.classList.remove('hidden-error');
-                        el.classList.add('error');
-                        log(`📡 Human scanned the ArUco marker board on ${nodes[key].name} — slot confirmed.`);
-                        log(`🏷️ Barcode decoded — ${nodes[key].serial} confirmed as ${nodes[key].name}.`);
-                        setCameraArrive('human', key, { fault: serverFaults[key] });
-                        showCameraFlash(key);
-                        await delay(400);
-                        if (token !== runToken) return;
-                        setServerFaultLabel(key, serverFaults[key]);
-                        log(`🔍 Component fault confirmed: ${nodes[key].name} — ${serverFaults[key].name}. Radioing coordinates to Crane Robot.`);
-                        pending.push(key);
-                    } else {
-                        log(`📡 Human scanned the ArUco marker board on ${nodes[key].name} — slot confirmed.`);
-                        log(`🏷️ Barcode decoded — ${nodes[key].serial} confirmed as ${nodes[key].name}.`);
-                        setCameraArrive('human', key, { fault: null });
-                        log(`🚶 ${nodes[key].name} inspected — all components nominal.`);
-                    }
-                    clearPathHighlight();
-                    await delay(200);
-                }
-                humanSearching = false;
-            }
-
-            async function robotLoop() {
-                while (true) {
-                    if (token !== runToken) return;
-                    if (pending.length === 0) {
-                        if (!humanSearching) return;
-                        await delay(150);
-                        continue;
-                    }
-                    const { dist, prev } = dijkstra(robotPos);
-                    pending.sort((a, b) => dist[a] - dist[b]);
-                    const target = pending.shift();
-                    const path = getPath(prev, robotPos, target);
-
-                    log(`🧮 Robot computing shortest path to ${nodes[target].name}: ${path.map(k => nodes[k].short).join(' → ')} (cost ${dist[target]})`);
-                    log(`🏗️ Crane Robot moving to repair ${nodes[target].name} using human-verified coordinates.`);
-                    setCameraTravel('robot');
-
-                    const ok = await moveAlongPath(robot, path, token, 'path-robot');
-                    if (!ok) return;
-                    robotPos = target;
-
-                    const faultyComponent = serverFaults[target];
-                    log(`📡 Robot arrived at ${nodes[target].name}. Re-scanning ArUco marker board to confirm slot before repair.`);
-                    log(`🏷️ Barcode re-verified — ${nodes[target].serial} matches ${nodes[target].name}.`);
-                    setCameraArrive('robot', target, { fault: faultyComponent });
-                    showCameraFlash(target);
-                    await delay(400);
-                    if (token !== runToken) return;
-                    setCameraRepair(target);
-                    await delay(500);
-                    if (token !== runToken) return;
-
-                    const el = document.getElementById(nodes[target].id);
-                    el.classList.remove('error');
-                    el.classList.add('fixed-flash');
-                    setTimeout(() => el.classList.remove('fixed-flash'), 1000);
-                    log(`🔧 ${nodes[target].name} — ${faultyComponent.name} replaced using human-verified coordinates. Server restored to service.`);
-                    setCameraVerify(target);
-                    restoreServerLabel(target);
-                    clearPathHighlight();
-                }
-            }
-
-            await Promise.all([humanLoop(), robotLoop()]);
-            if (token !== runToken) return;
-
-            log('🏃 Search and repair complete. Sending team back to the Dock...');
-            setCameraTravel(robotPos !== 'main' ? 'robot' : 'human');
-            const homeTasks = [];
-            if (robotPos !== 'main') {
-                const { prev } = dijkstra(robotPos);
-                const p = getPath(prev, robotPos, 'main');
-                homeTasks.push(moveAlongPath(robot, p, token, 'path-robot').then(ok => { if (ok) robotPos = 'main'; }));
-            }
-            if (humanPos !== 'main') {
-                const { prev } = dijkstra(humanPos);
-                const p = getPath(prev, humanPos, 'main');
-                homeTasks.push(moveAlongPath(human, p, token, 'path-human').then(ok => { if (ok) humanPos = 'main'; }));
-            }
-            await Promise.all(homeTasks);
-            if (token !== runToken) return;
-            clearPathHighlight();
-            human.style.display = 'none';
-            log('✅ Team returned to Dock. All servers nominal.');
-            setCameraIdle();
-        }
-
-        // ---------------------------------------------------------------
-        // Scenario dispatch
-        // ---------------------------------------------------------------
-        async function triggerScenario(type, btnElement) {
-            document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
-
-            runToken++;
-            const token = runToken;
-
-            resetGraphVisual();
-            resetToHome();
-            robotPos = 'main';
-            humanPos = 'main';
-            setCameraIdle();
-
-            setButtonsDisabled(true);
+        async function scanServer(who, s, t, o = {}) {
+            const label = who === 'human' ? 'Human' : 'Robot';
             try {
-                if (type === 'A') {
-                    log('Scenario A triggered: Rack fully healthy. All 7 servers nominal. Crane robot idling at the Dock.');
-                    setCameraIdle();
-                } else if (type === 'B') {
-                    log('Scenario B triggered: injecting random component fault(s) across the rack.');
-                    await runScenarioB(token);
-                } else if (type === 'C') {
-                    log('Scenario C triggered: injecting hidden component fault(s), invisible to sensors.');
-                    await runScenarioC(token);
+                burst(s);
+                camBay(s, 'scanning', who);
+                await delay(who === 'human' ? 450 : 520); if (!alive(t)) return false;
+                if (o.manual) log(`📡 Operator scan — ArUco marker #${s.aruco} locked, slot position confirmed for Server ${s.id}.`, 'robot');
+                else if (who === 'human') log(`📡 Human scanned the ArUco marker #${s.aruco} on Server ${s.id} — slot confirmed.`, 'human');
+                else if (o.reverify) log(`📡 Robot arrived at Server ${s.id}. Re-scanning ArUco marker #${s.aruco} to confirm slot before repair.`, 'robot');
+                else log(`📡 Robot arrived at Server ${s.id}. Scanning ArUco marker #${s.aruco} — slot position confirmed.`, 'robot');
+
+                if (who !== 'human' && !o.manual && Math.random() < .18) {
+                    log(`⚠️ Barcode unreadable — label glare/blur on Server ${s.id}. Re-focusing and retrying…`, 'alert');
+                    bumpRobotError(); camBay(s, 'blur', who);
+                    await delay(900); if (!alive(t)) return false;
+                } else await delay(350);
+                if (!alive(t)) return false;
+                log(`🏷️ Barcode ${o.reverify ? 're-verified' : 'decoded'} — ${s.serial} ${o.reverify ? 'matches' : 'confirmed as'} Server ${s.id}.`, who === 'human' ? 'human' : 'robot');
+
+                s.faults.forEach(f => { f.revealed = true; });
+                s.inspected = true; s.suspect = false;
+                renderServer(s); renderOrders();
+                camBay(s, 'scanned', who);
+                await delay(350); if (!alive(t)) return false;
+
+                if (openFaults(s).length) {
+                    log(`🔍 Component fault confirmed: Server ${s.id} — ${openFaults(s).map(f => cname(f.comp)).join(', ')}.${who === 'human' ? ' Radioing coordinates to Crane Robot.' : ''}`, 'alert');
+                } else {
+                    log(who === 'human' ? `🚶 Server ${s.id} inspected — all components nominal.` : `✅ Server ${s.id} inspected — all components nominal.`, who === 'human' ? 'human' : 'ok');
                 }
-            } finally {
-                if (token === runToken) setButtonsDisabled(false);
-            }
+                return true;
+            } finally { if (S.manual) S.camKey = ''; }
         }
 
-        // ---------------------------------------------------------------
-        // Initial setup
-        // ---------------------------------------------------------------
-        window.onload = () => {
-            buildGraph();
-            resetToHome();
-            setCameraIdle();
-            log('System initialized. Rack layout loaded — 2 server rows, 7 servers, 1 robot dock. Dijkstra pathfinding engine ready.');
-        };
+        async function swapComponent(who, s, f, t) {
+            f.status = 'fixing'; renderServer(s); renderOrders();
+            camBay(s, 'repair', who, { comp: f });
+            log(`🔧 Deploying mini-crane hoist — swapping ${cname(f.comp)} on Server ${s.id}.`, 'robot');
+            await delay(950); if (!alive(t)) { f.status = 'open'; renderServer(s); renderOrders(); return false; }
+            f.status = 'fixed'; renderServer(s); renderOrders();
+            log(`✅ Server ${s.id} — ${cname(f.comp)} replaced.`, 'ok');
+            return true;
+        }
+        function maybeRestore(s, mode) {
+            if (s._restoring || !s.faults.length || !s.faults.every(f => f.status === 'fixed')) return;
+            s._restoring = true;
+            const n = s.faults.length, el = srvEls[s.id];
+            log(`✅ Server ${s.id} — ${n} component${n > 1 ? 's' : ''} replaced. Server restored to operational status.`, 'ok');
+            camBay(s, 'verified', 'robot');
+            el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1100);
+            bumpJob(mode);
+            setTimeout(() => { s.faults = []; s._restoring = false; renderServer(s); renderOrders(); updateHud(); }, 1100);
+        }
+        async function serviceServer(who, s, t, mode, o = {}) {
+            setFace(s.approach);
+            const ok = await scanServer(who, s, t, o);
+            if (!ok) return false;
+            for (const f of openFaults(s)) {
+                if (!alive(t)) return false;
+                if (!(await swapComponent(who, s, f, t))) return false;
+            }
+            maybeRestore(s, mode);
+            return true;
+        }
+
+        /* ============================================================
+           Modes + scenarios
+        ============================================================ */
+        function setMode(m) { S.mode = m; updateHud(); }
+        function resetWorld() {
+            S.token++; S.running = false; S.estop = false; S.stalled = false; S.manual = false; S.camKey = '';
+            servers.forEach(s => { s.faults = []; s.inspected = false; s.suspect = false; s._restoring = false; });
+            clearTrail('robot'); clearTrail('human');
+            S.robot.busy = false; S.human.busy = false; S.human.active = false; humanEl.classList.remove('on');
+            placeActor('robot', DOCK.x, DOCK.y, 0); placeActor('human', DOCK.x, DOCK.y, 0); setFace('E');
+            $('#chk-manual').checked = false;
+            renderAllServers(); renderOrders(); updateHud();
+        }
+        const failPoint = len => (len >= 4 ? rand(Math.floor(len * .3) + 1, len - 1) : -1);
+        const STALL_REASONS = ['ArUco rail lock lost', 'Wheel encoder drift exceeded limit', 'Path blocked by obstacle', 'Link heartbeat lost (>500 ms) — controlled stop'];
+
+        function stall() {
+            const reason = STALL_REASONS[rand(0, STALL_REASONS.length - 1)];
+            S.token++; S.running = false; S.stalled = true; S.stallReason = reason; S.manual = true;
+            S.human.active = false; humanEl.classList.remove('on'); S.robot.busy = false;
+            bumpRobotError();
+            log(`⛔ AUTO-NAV FAULT: ${reason} at ${cellName(S.robot.x, S.robot.y)}. Automation halted — switch to MANUAL control.`, 'alert');
+            $('#chk-manual').checked = true;
+            S.scen = null; setMode('manual'); camLost(reason, false);
+        }
+
+        async function runAuto(t, { inject }) {
+            S.running = true; setMode('auto');
+            let failUsed = !$('#chk-fail').checked;
+            try {
+                if (inject) {
+                    const hit = injectFaults({ revealed: true });
+                    log(`⚠️ ALERT: ${hit.length} server(s) reporting component faults — ${hit.map(s => `Server ${s.id} (${compNames(s)})`).join('; ')}.`, 'alert');
+                    log('🧮 Robot sensors online — running Dijkstra shortest-path search across the library layout.', 'robot');
+                } else log('🧮 Resuming automated run on open work orders — recomputing Dijkstra routes.', 'robot');
+
+                while (alive(t)) {
+                    const queue = servers.filter(s => openFaults(s).length);
+                    if (!queue.length) break;
+                    const n = nearest(S.robot, queue); if (!n) break;
+                    const s = n.srv, path = pathTo(n.prev, S.robot.x, S.robot.y, s.sx, s.y);
+                    log(`🧮 Shortest path ${cellName(S.robot.x, S.robot.y)} → Server ${s.id}: ${routeSummary(path)} (cost ${pathCost(path).toFixed(1)})`, 'robot');
+                    log(`🏗️ Crane Robot en route to Server ${s.id}...`, 'robot');
+                    camTravel('robot');
+                    const failAt = !failUsed ? failPoint(path.length) : -1;
+                    const res = await followPath('robot', path, t, { failAt });
+                    if (res === 'cancelled') return;
+                    if (res === 'stalled') { stall(); return; }
+                    clearTrail('robot');
+                    if (!(await serviceServer('robot', s, t, 'auto'))) return;
+                }
+                if (!alive(t)) return;
+                log('🏗️ All component faults resolved. Returning to Dock via shortest route...', 'robot');
+                camTravel('robot');
+                const r = await goDock('robot', t);
+                if (r !== 'ok') return;
+                clearTrail('robot');
+                log('✅ All servers operational. Robot idling at Dock.', 'ok');
+                setMode('idle'); camIdle();
+            } finally { if (t === S.token) { S.running = false; updateHud(); } }
+        }
+
+        async function runHuman(t) {
+            S.running = true; setMode('human');
+            S.human.active = true; humanEl.classList.add('on');
+            try {
+                const hit = injectFaults({ revealed: false });
+                const decoys = shuffle(servers.filter(s => s.faults.length === 0)).slice(0, rand(2, 3));
+                const suspects = [...hit, ...decoys]; suspects.forEach(s => { s.suspect = true; });
+                renderAllServers(); renderOrders();
+                log(`👤 Anomaly signature detected on ${suspects.length} server(s) by external monitoring, but the exact component is invisible to robot sensors.`, 'alert');
+                log('🧮 Dispatching Human Operator — inspection order computed via Dijkstra distance from the Dock.', 'human');
+
+                const todo = new Set(suspects), pending = [];
+                let searching = true, failUsed = !$('#chk-fail').checked;
+
+                const humanLoop = async () => {
+                    while (todo.size && alive(t)) {
+                        const n = nearest(S.human, [...todo]); if (!n) break;
+                        const s = n.srv, path = pathTo(n.prev, S.human.x, S.human.y, s.sx, s.y);
+                        camTravel('human');
+                        const r = await followPath('human', path, t, { trail: 'h' });
+                        if (r !== 'ok') return;
+                        if (!(await scanServer('human', s, t))) return;
+                        todo.delete(s);
+                        if (s.faults.length) pending.push(s);
+                        clearTrail('human');
+                        await delay(200);
+                    }
+                    searching = false;
+                };
+                const robotLoop = async () => {
+                    while (alive(t)) {
+                        if (!pending.length) { if (!searching) return; await delay(150); continue; }
+                        const n = nearest(S.robot, pending); if (!n) return;
+                        const s = n.srv; pending.splice(pending.indexOf(s), 1);
+                        const path = pathTo(n.prev, S.robot.x, S.robot.y, s.sx, s.y);
+                        log(`🧮 Robot computing shortest path to Server ${s.id}: ${routeSummary(path)} (cost ${pathCost(path).toFixed(1)})`, 'robot');
+                        log(`🏗️ Crane Robot moving to repair Server ${s.id} using human-verified coordinates.`, 'robot');
+                        camTravel('robot');
+                        const failAt = !failUsed ? failPoint(path.length) : -1;
+                        const r = await followPath('robot', path, t, { failAt });
+                        if (r === 'cancelled') return;
+                        if (r === 'stalled') { failUsed = true; stall(); return; }
+                        clearTrail('robot');
+                        if (!(await serviceServer('robot', s, t, 'human', { reverify: true }))) return;
+                    }
+                };
+                await Promise.all([humanLoop(), robotLoop()]);
+                if (!alive(t)) return;
+
+                log('🏃 Search and repair complete. Sending team back to the Dock...', 'human');
+                camTravel('robot');
+                await Promise.all([goDock('robot', t), goDock('human', t)]);
+                if (!alive(t)) return;
+                clearTrail('robot'); clearTrail('human');
+                S.human.active = false; humanEl.classList.remove('on');
+                log('✅ Team returned to Dock. All servers nominal.', 'ok');
+                setMode('idle'); camIdle();
+            } finally { if (t === S.token) { S.running = false; updateHud(); } }
+        }
+
+        function setScenarioButton(sc) { S.scen = sc; $$('#sc-seg button').forEach(b => b.classList.toggle('on', b.dataset.sc === sc)); }
+        async function startScenario(sc) {
+            resetWorld(); setScenarioButton(sc);
+            const t = S.token;
+            try {
+                if (sc === 'A') {
+                    log('Scenario A triggered: Rack fully healthy. All 16 servers nominal. Crane robot idling at the Dock.', 'system');
+                    setMode('idle'); camIdle();
+                } else if (sc === 'B') {
+                    log('Scenario B triggered: injecting random component fault(s) across the rack.', 'system');
+                    await runAuto(t, { inject: true });
+                } else {
+                    log('Scenario C triggered: injecting hidden component fault(s), invisible to sensors.', 'system');
+                    await runHuman(t);
+                }
+            } catch (err) { console.error(err); log('Simulation error: ' + err.message, 'alert'); }
+        }
+
+        /* ---------- manual takeover / resume / e-stop ---------- */
+        function setManual(on) {
+            if (on) {
+                S.token++; S.running = false; S.manual = true; S.robot.busy = false; S.human.busy = false;
+                S.human.active = false; humanEl.classList.remove('on');
+                clearTrail('robot'); clearTrail('human'); setScenarioButton(null);
+                log('🕹️ Operator takeover — MANUAL control enabled. Automated motion is locked out.', 'system');
+                setMode('manual'); S.camKey = ''; manualCam();
+            } else {
+                S.manual = false; S.stalled = false; S.camKey = '';
+                log('🕹️ Manual control released.', 'system');
+                setMode('idle'); camIdle();
+            }
+            $('#chk-manual').checked = on;
+        }
+        async function resumeAuto() {
+            if (S.estop || S.running) return;
+            if (!servers.some(s => openFaults(s).length)) { log('No known open work orders to resume. Scan servers first.', 'system'); return; }
+            S.token++; S.manual = false; S.stalled = false; S.camKey = ''; $('#chk-manual').checked = false;
+            clearTrail('robot'); setScenarioButton('B');
+            const t = S.token; log('▶️ Operator pressed RESUME AUTO — handing control back to the robot.', 'system');
+            try { await runAuto(t, { inject: false }); } catch (err) { console.error(err); }
+        }
+        async function returnToDock() {
+            if (S.estop || S.running) return;
+            S.token++; S.manual = false; S.stalled = false; S.camKey = ''; $('#chk-manual').checked = false; setScenarioButton(null);
+            const t = S.token; S.running = true; setMode('auto');
+            log('🏗️ Operator requested return to Dock — computing shortest route.', 'robot');
+            camTravel('robot');
+            try {
+                const r = await goDock('robot', t);
+                if (r === 'ok') { clearTrail('robot'); log('✅ Robot docked and idling.', 'ok'); setMode('idle'); camIdle(); }
+            } finally { if (t === S.token) { S.running = false; updateHud(); } }
+        }
+        function engageEstop() {
+            if (S.estop) return;
+            S.estop = true; S.token++; S.running = false; S.robot.busy = false; S.human.busy = false;
+            log('🛑 E-STOP engaged — all motion inhibited. Reset required.', 'alert');
+            camLost('', true); updateHud();
+        }
+        function resetEstop() {
+            if (!S.estop) return;
+            S.estop = false; S.token++; S.camKey = '';
+            log('E-STOP reset. Control returned to the operator — choose Manual, Resume auto or Return to dock.', 'system');
+            if (S.manual) { setMode('manual'); manualCam(); } else { setMode('idle'); camIdle(); }
+        }
+
+        /* ---------- manual driving ---------- */
+        async function moveManual(d) {
+            if (!S.manual || S.estop || S.robot.busy || S.tab !== 'sim') return;
+            const R = S.robot, [dx, dy] = DELTA[d], nx = R.x + dx, ny = R.y + dy;
+            setFace(d);
+            if (!inB(nx, ny) || serverAt[K(nx, ny)] || !walk(nx, ny)) { manualCam(); updatePos(); return; }   // bump = turn to face
+            R.busy = true;
+            try { await stepTo('robot', nx, ny, 150); } finally { R.busy = false; }
+            manualCam(); updateHud();
+        }
+        async function manualScan() {
+            if (!S.manual || S.estop || S.robot.busy) return;
+            const s = frontServer();
+            if (!s) { log('No server in front — press ← / → toward a shelf to face it.', 'system'); return; }
+            const t = S.token; S.robot.busy = true;
+            try { await scanServer('robot', s, t, { manual: true }); } finally { S.robot.busy = false; updateHud(); }
+        }
+        async function manualSwap() {
+            if (!S.manual || S.estop || S.robot.busy) return;
+            const s = frontServer();
+            if (!s) { log('No server in front — press ← / → toward a shelf to face it.', 'system'); return; }
+            const f = openFaults(s)[0];
+            if (!f) { log(s.faults.some(x => !x.revealed) ? `Server ${s.id}: scan first — component state unknown.` : `Server ${s.id}: no known faults to swap.`, 'system'); return; }
+            const t = S.token; S.robot.busy = true;
+            try { if (await swapComponent('robot', s, f, t)) maybeRestore(s, 'manual'); } finally { S.robot.busy = false; updateHud(); }
+        }
+
+        const held = [];
+        const KEYDIR = { arrowup: 'N', w: 'N', arrowdown: 'S', s: 'S', arrowleft: 'W', a: 'W', arrowright: 'E', d: 'E' };
+        const typing = e => /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) && e.target.type !== 'checkbox';
+        window.addEventListener('keydown', e => {
+            if (S.tab !== 'sim' || e.metaKey || e.ctrlKey || e.altKey || typing(e)) return;
+            const k = e.key.toLowerCase();
+            if (k === 'escape') { engageEstop(); return; }
+            if (!S.manual) return;
+            if (KEYDIR[k]) { e.preventDefault(); if (!held.includes(KEYDIR[k])) held.push(KEYDIR[k]); }
+            else if (k === ' ') { e.preventDefault(); if (!e.repeat) manualScan(); }
+            else if (k === 'e') { e.preventDefault(); if (!e.repeat) manualSwap(); }
+        });
+        window.addEventListener('keyup', e => {
+            const k = e.key.toLowerCase();
+            if (KEYDIR[k]) { const i = held.indexOf(KEYDIR[k]); if (i >= 0) held.splice(i, 1); }
+            if (S.manual && S.tab === 'sim' && k === ' ') e.preventDefault();
+        });
+        window.addEventListener('blur', () => { held.length = 0; });
+        setInterval(() => { if (held.length) moveManual(held[held.length - 1]); }, 60);
+
+        // on-screen D-pad (hold to keep driving)
+        $$('#pad [data-dir]').forEach(b => {
+            const d = b.dataset.dir;
+            const down = e => { e.preventDefault(); b.classList.add('down'); if (!held.includes(d)) held.push(d); };
+            const up = () => { b.classList.remove('down'); const i = held.indexOf(d); if (i >= 0) held.splice(i, 1); };
+            b.addEventListener('pointerdown', down);
+            ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, up));
+        });
+
+        // gamepad (Gamepad API, polled each animation frame)
+        let padOn = false, padPrev = {}, padHold = null;
+        function pollPad() {
+            const pads = navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean) : [];
+            const p = pads[0];
+            if (p) {
+                let d = null;
+                if (p.buttons[12] && p.buttons[12].pressed) d = 'N'; else if (p.buttons[13] && p.buttons[13].pressed) d = 'S';
+                else if (p.buttons[14] && p.buttons[14].pressed) d = 'W'; else if (p.buttons[15] && p.buttons[15].pressed) d = 'E';
+                else { const ax = p.axes[0] || 0, ay = p.axes[1] || 0; if (Math.abs(ax) > .55 || Math.abs(ay) > .55) d = Math.abs(ax) > Math.abs(ay) ? (ax > 0 ? 'E' : 'W') : (ay > 0 ? 'S' : 'N'); }
+                if (padHold && padHold !== d) { const i = held.indexOf(padHold); if (i >= 0) held.splice(i, 1); padHold = null; }
+                if (d && padHold !== d) { held.push(d); padHold = d; }
+                const edge = (i, fn) => { const on = !!(p.buttons[i] && p.buttons[i].pressed); if (on && !padPrev[i] && S.tab === 'sim') fn(); padPrev[i] = on; };
+                edge(0, manualScan); edge(2, manualSwap); edge(1, engageEstop);
+            }
+            requestAnimationFrame(pollPad);
+        }
+        const padStatus = () => { const p = navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean)[0] : null; $('#pad-status').textContent = p ? `connected · ${p.id.slice(0, 28)} (D-pad/stick drive, A scan, X swap, B e-stop)` : 'not detected'; };
+        window.addEventListener('gamepadconnected', () => { padStatus(); if (!padOn) { padOn = true; requestAnimationFrame(pollPad); } });
+        window.addEventListener('gamepaddisconnected', padStatus);
+
+        /* ============================================================
+           HUD / work orders / banner
+        ============================================================ */
+        function modeInfo() {
+            if (S.estop) return { k: 'alert', t: 'E-STOP' };
+            if (S.stalled) return { k: 'alert', t: 'STALLED' };
+            return ({ idle: { k: '', t: 'IDLE' }, auto: { k: 'auto', t: 'AUTO' }, human: { k: 'human', t: 'HUMAN ASSIST' }, manual: { k: 'manual', t: 'MANUAL' } })[S.mode];
+        }
+        const pillHtml = () => { const m = modeInfo(); return `<span class="pill ${m.k}"><i></i>${m.t}</span>`; };
+        function updatePos() {
+            $('#t-pos').textContent = cellName(S.robot.x, S.robot.y);
+            const sv = frontServer();
+            $('#t-face').textContent = sv ? `Server ${sv.id}` : ({ N: 'North ↑', S: 'South ↓', E: 'East →', W: 'West ←' })[S.robot.face];
+            const b = Math.round(S.robot.battery);
+            $('#t-batt').textContent = b + '%'; $('#rail-batt').textContent = b + '%';
+            $('#t-batt-bar').style.width = b + '%'; $('#rail-batt-bar').style.width = b + '%';
+        }
+        function renderBanner() {
+            const el = $('#banner');
+            if (S.estop) {
+                el.className = 'banner on';
+                el.innerHTML = `<span>🛑 <b>E-STOP engaged</b> — all motion is inhibited. Reset to continue.</span><span class="acts"><button class="btn sm danger" id="bn-reset">Reset E-stop</button></span>`;
+                $('#bn-reset').onclick = resetEstop;
+            } else if (S.stalled) {
+                el.className = 'banner on';
+                el.innerHTML = `<span>⛔ <b>Automation failed</b> — ${esc(S.stallReason)}. <b>Manual control is active:</b> drive with WASD / arrows, <b>Space</b> scan, <b>E</b> swap.</span><span class="acts"><button class="btn sm pri" id="bn-resume">Resume auto</button><button class="btn sm" id="bn-dock">Return to dock</button></span>`;
+                $('#bn-resume').onclick = resumeAuto; $('#bn-dock').onclick = returnToDock;
+            } else el.className = 'banner';
+        }
+        function updateHud() {
+            const pill = pillHtml();
+            $('#mode-pill').innerHTML = pill; $('#t-mode').innerHTML = pill; $('#rail-mode').innerHTML = pill;
+            updatePos(); renderBanner();
+            const man = S.manual && !S.estop;
+            $$('#pad [data-dir]').forEach(b => { b.disabled = !man; });
+            $('#btn-scan').disabled = !man; $('#btn-swap').disabled = !man;
+            const pending = servers.some(s => openFaults(s).length);
+            $('#btn-resume').disabled = S.estop || S.running || !pending;
+            $('#btn-dock').disabled = S.estop || S.running || (S.robot.x === DOCK.x && S.robot.y === DOCK.y);
+            const es = $('#btn-estop'); es.textContent = S.estop ? 'RESET E-STOP' : 'E-STOP';
+            es.onclick = S.estop ? resetEstop : engageEstop;
+            $('#chk-manual').disabled = S.estop;
+        }
+        function renderOrders() {
+            const rows = servers.filter(s => s.suspect || s.faults.some(f => f.revealed)).map(s => {
+                const shown = s.faults.filter(f => f.revealed);
+                const working = shown.some(f => f.status === 'fixing');
+                const unknown = !shown.length;
+                const st = unknown ? ['unknown', 'Awaiting inspection'] : working ? ['working', 'Swapping'] : ['', 'Queued'];
+                return `<div class="wo"><div class="wo-h"><b>${s.id}</b><span class="loc">${cellName(s.sx, s.y).replace('Aisle ', 'Aisle ')}</span><span class="wo-st ${st[0]}">${st[1]}</span></div>
+                    ${shown.length ? `<div class="wo-c">${shown.map(f => `<i class="chip ${f.status}" title="${cname(f.comp)} · ${f.sev}">${comp(f.comp).abbr}${f.sev === 'critical' ? '!' : ''}</i>`).join('')}</div>` : ''}</div>`;
+            });
+            $('#wo-list').innerHTML = rows.length ? rows.join('') : '<div class="empty">No open work orders.</div>';
+            const open = servers.filter(s => s.faults.some(f => f.revealed && f.status !== 'fixed')).length;
+            $('#wo-count').textContent = open ? `· ${open} open` : '';
+        }
+
+        /* ============================================================
+           Dashboard
+        ============================================================ */
+        function buildWeek(w) {
+            const rng = seeded(7700 + w * 977), ri = (a, b) => a + Math.floor(rng() * (b - a + 1));
+            const labels = [], dates = [];
+            for (let i = 6; i >= 0; i--) { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - w * 7 - i); dates.push(d); labels.push(d.toLocaleDateString('en-US', { weekday: 'short' })); }
+            const jobs = { auto: [], human: [], manual: [] }, robotJobs = [], robotErrs = [], serverErr = [];
+            const trend = w === 0 ? -3 : w === 1 ? 0 : 2;
+            for (let i = 0; i < 7; i++) {
+                const weekend = [0, 6].includes(dates[i].getDay());
+                let total = weekend ? ri(4, 8) : ri(9, 15);
+                if (w === 0 && i === 6) total = ri(3, 5);
+                const manual = Math.round(total * (.06 + rng() * .1)), auto = Math.round(total * (.55 + rng() * .15)), human = Math.max(0, total - auto - manual);
+                jobs.auto.push(auto); jobs.human.push(human); jobs.manual.push(manual);
+                robotJobs.push(auto + human + manual);
+                robotErrs.push(Math.max(0, Math.round(total * (.07 + rng() * .1) + trend * .25)));
+                serverErr.push(clamp(ri(9, 26) + trend * 1.5 + rng(), 3, 60));
+            }
+            const faultCats = { compute: ri(10, 18), memory: ri(5, 10), power: ri(6, 12), network: ri(8, 14), storage: ri(12, 20), cooling: ri(9, 16) };
+            const serverFaults = {}; servers.forEach(s => { serverFaults[s.id] = ri(0, 4) + (['A-R3', 'B-L2', 'A-L4'].includes(s.id) ? ri(2, 4) : 0); });
+            const cycle = ri(88, 104), cycleDaily = labels.map(() => cycle + ri(-9, 9));
+            return { labels, jobs, robotJobs, robotErrs, serverErr, faultCats, serverFaults, cycle, cycleDaily, uptime: 97.4 + rng() * 2.2, crn2: { jobs: ri(18, 30), err: ri(1, 3), up: 94 + rng() * 4 } };
+        }
+        const WEEKS = [buildWeek(0), buildWeek(1), buildWeek(2)];
+        function getWeek(w) {
+            const b = WEEKS[w], d = JSON.parse(JSON.stringify(b));
+            if (w === 0) {
+                const i = 6;
+                d.jobs.auto[i] += live.jobs.auto; d.jobs.human[i] += live.jobs.human; d.jobs.manual[i] += live.jobs.manual;
+                d.robotJobs[i] += live.robotJobs; d.robotErrs[i] += live.robotErrors;
+                d.serverErr[i] = Math.min(100, d.serverErr[i] + live.faultServers * 100 / servers.length);
+                Object.keys(CATS).forEach(c => { d.faultCats[c] += live.faultCats[c] || 0; });
+                Object.keys(live.serverFaults).forEach(id => { d.serverFaults[id] = (d.serverFaults[id] || 0) + live.serverFaults[id]; });
+            }
+            d.robotErrPct = d.robotErrs.map((e, i) => d.robotJobs[i] ? e / d.robotJobs[i] * 100 : 0);
+            return d;
+        }
+        const sum = a => a.reduce((x, y) => x + y, 0);
+        const totalJobs = d => sum(d.jobs.auto) + sum(d.jobs.human) + sum(d.jobs.manual);
+
+        function spark(vals, color) {
+            const w = 90, h = 26, mx = Math.max(...vals, 1), mn = Math.min(...vals, 0);
+            const pts = vals.map((v, i) => [i * (w - 4) / (vals.length - 1) + 2, h - 3 - (v - mn) / ((mx - mn) || 1) * (h - 8)]);
+            return `<svg viewBox="0 0 ${w} ${h}"><path d="M${pts.map(p => p.map(n => n.toFixed(1)).join(',')).join(' L')}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${pts[pts.length - 1][0]}" cy="${pts[pts.length - 1][1]}" r="2.6" fill="${color}"/></svg>`;
+        }
+        function dpill(cur, prev, goodWhenUp, unit = '%', abs = false) {
+            if (prev == null) return `<span class="dl flat">—</span>`;
+            const diff = abs ? cur - prev : (prev ? (cur - prev) / prev * 100 : 0);
+            const up = diff >= 0, good = goodWhenUp ? up : !up, flat = Math.abs(diff) < .05;
+            return `<span class="dl ${flat ? 'flat' : good ? 'good' : 'bad'}">${up ? '▲' : '▼'} ${Math.abs(diff).toFixed(abs ? 1 : 0)}${unit}</span>`;
+        }
+        function renderKpis(d, p) {
+            const tj = totalJobs(d), pj = p ? totalJobs(p) : null;
+            const succ = 100 - sum(d.robotErrs) / sum(d.robotJobs) * 100, psucc = p ? 100 - sum(p.robotErrs) / sum(p.robotJobs) * 100 : null;
+            const dayTot = d.jobs.auto.map((v, i) => v + d.jobs.human[i] + d.jobs.manual[i]);
+            $('#kpi-jobs').innerHTML = `<div class="kpi-l">Jobs completed</div><div class="kpi-v">${tj}<small>jobs / 7 days</small></div><div class="kpi-f">${dpill(tj, pj, true)}${spark(dayTot, '#3B82F6')}</div>`;
+            $('#kpi-success').innerHTML = `<div class="kpi-l">Robot success rate</div><div class="kpi-v">${succ.toFixed(1)}<small>%</small></div><div class="kpi-f">${dpill(succ, psucc, true, ' pts', true)}${spark(d.robotErrPct.map(v => 100 - v), '#10B981')}</div>`;
+            $('#kpi-cycle').innerHTML = `<div class="kpi-l">Avg cycle / server</div><div class="kpi-v">${d.cycle}<small>s</small></div><div class="kpi-f">${dpill(d.cycle, p ? p.cycle : null, false, ' s', true)}${spark(d.cycleDaily, '#F59E0B')}</div>`;
+            const open = servers.reduce((n, s) => n + s.faults.filter(f => f.revealed && f.status !== 'fixed').length, 0);
+            const srvOpen = servers.filter(s => s.faults.some(f => f.revealed && f.status !== 'fixed')).length;
+            $('#kpi-faults').innerHTML = `<div class="kpi-l">Active faults · live</div><div class="kpi-v" style="color:${open ? '#FCA5A5' : '#6EE7B7'}">${open}<small>${open ? `on ${srvOpen} server${srvOpen > 1 ? 's' : ''}` : 'all clear'}</small></div><div class="kpi-f"><span class="dl ${open ? 'bad' : 'good'}">${open ? 'ATTENTION' : 'HEALTHY'}</span><span class="kpi-s" style="font:11px var(--mono);color:var(--dim)">from simulation</span></div>`;
+        }
+
+        function smooth(pts) {
+            if (pts.length < 3) return 'M' + pts.map(p => p.join(',')).join(' L');
+            let d = `M${pts[0][0]},${pts[0][1]}`;
+            for (let i = 0; i < pts.length - 1; i++) {
+                const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+                d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)},${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)},${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+            }
+            return d;
+        }
+        function attachHover(box, W, n, xOf, content) {
+            const svg = $('svg', box), tip = document.createElement('div'); tip.className = 'tip'; tip.style.display = 'none'; box.appendChild(tip);
+            const guide = $('.guide', svg);
+            box.onmousemove = e => {
+                const r = svg.getBoundingClientRect(), px = (e.clientX - r.left) / r.width * W;
+                let best = 0, bd = 1e9; for (let i = 0; i < n; i++) { const dd = Math.abs(xOf(i) - px); if (dd < bd) { bd = dd; best = i; } }
+                if (guide) { guide.setAttribute('x1', xOf(best)); guide.setAttribute('x2', xOf(best)); guide.style.opacity = 1; }
+                tip.innerHTML = content(best); tip.style.display = 'block';
+                const left = xOf(best) / W * r.width + (r.left - box.getBoundingClientRect().left);
+                tip.style.left = clamp(left, 70, box.clientWidth - 70) + 'px';
+            };
+            box.onmouseleave = () => { tip.style.display = 'none'; if (guide) guide.style.opacity = 0; };
+        }
+        function lineChart(box, labels, series, yMax) {
+            const W = 640, H = 250, l = 42, r = 18, t = 14, b = 30, iw = W - l - r, ih = H - t - b, n = labels.length;
+            const x = i => l + i * iw / (n - 1), y = v => t + ih - Math.min(v, yMax) / yMax * ih;
+            let g = '';
+            for (let k = 0; k <= 4; k++) { const v = yMax * k / 4, yy = y(v); g += `<line class="gl" x1="${l}" x2="${W - r}" y1="${yy}" y2="${yy}"/><text class="ax" x="${l - 8}" y="${yy + 3.5}" text-anchor="end">${Math.round(v)}%</text>`; }
+            labels.forEach((lb, i) => { g += `<text class="ax" x="${x(i)}" y="${H - 9}" text-anchor="middle">${lb}</text>`; });
+            let defs = '', body = '';
+            series.forEach((s, si) => {
+                const pts = s.values.map((v, i) => [x(i), y(v)]), line = smooth(pts);
+                defs += `<linearGradient id="lg${si}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s.color}" stop-opacity=".30"/><stop offset="1" stop-color="${s.color}" stop-opacity="0"/></linearGradient>`;
+                body += `<path d="${line} L${x(n - 1)},${y(0)} L${x(0)},${y(0)} Z" fill="url(#lg${si})"/><path d="${line}" fill="none" stroke="${s.color}" stroke-width="2.2" stroke-linecap="round"/>`;
+                pts.forEach(([px, py], i) => { body += `<circle cx="${px}" cy="${py}" r="${i === n - 1 ? 4.5 : 2.6}" fill="${i === n - 1 ? s.color : '#08101F'}" stroke="${s.color}" stroke-width="1.6"/>`; });
+            });
+            box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Weekly error rate chart"><defs>${defs}</defs>${g}<line class="guide" y1="${t}" y2="${t + ih}" stroke="#3B6BE0" stroke-dasharray="3 3" style="opacity:0"/>${body}</svg>`;
+            attachHover(box, W, n, x, i => `<b>${labels[i]}</b>` + series.map(s => `<div><i style="background:${s.color}"></i>${s.name}: ${s.values[i].toFixed(1)}%</div>`).join(''));
+        }
+        function barChart(box, labels, parts) {
+            const W = 520, H = 250, l = 34, r = 10, t = 22, b = 30, iw = W - l - r, ih = H - t - b, n = labels.length;
+            const totals = labels.map((_, i) => parts.reduce((a, p) => a + p.values[i], 0));
+            const yMax = Math.max(8, Math.ceil(Math.max(...totals) / 4) * 4), bw = iw / n * .56;
+            const xc = i => l + iw / n * (i + .5), y = v => t + ih - v / yMax * ih;
+            let g = '';
+            for (let k = 0; k <= 4; k++) { const v = yMax * k / 4, yy = y(v); g += `<line class="gl" x1="${l}" x2="${W - r}" y1="${yy}" y2="${yy}"/><text class="ax" x="${l - 7}" y="${yy + 3.5}" text-anchor="end">${Math.round(v)}</text>`; }
+            let bars = '';
+            labels.forEach((lb, i) => {
+                let acc = 0;
+                parts.forEach((p, pi) => {
+                    const v = p.values[i]; if (!v) return;
+                    const y1 = y(acc + v), h = y(acc) - y1; acc += v;
+                    bars += `<rect x="${(xc(i) - bw / 2).toFixed(1)}" y="${y1.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(h - 1.5, 1).toFixed(1)}" rx="${pi === parts.length - 1 ? 3 : 1}" fill="${p.color}"/>`;
+                });
+                bars += `<text class="ax" x="${xc(i)}" y="${y(totals[i]) - 6}" text-anchor="middle" style="fill:#C9D8FF;font-weight:700">${totals[i]}</text><text class="ax" x="${xc(i)}" y="${H - 9}" text-anchor="middle">${lb}</text>`;
+            });
+            box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Jobs completed per day, stacked by mode">${g}<line class="guide" y1="${t}" y2="${t + ih}" stroke="#3B6BE0" stroke-dasharray="3 3" style="opacity:0"/>${bars}</svg>`;
+            attachHover(box, W, n, xc, i => `<b>${labels[i]} · ${totals[i]} jobs</b>` + parts.map(p => `<div><i style="background:${p.color}"></i>${p.name}: ${p.values[i]}</div>`).join(''));
+        }
+        function donut(box, cats) {
+            const items = Object.keys(CATS).map(k => ({ k, ...CATS[k], v: cats[k] })), total = sum(items.map(i => i.v)) || 1, R = 54, C = 2 * Math.PI * R;
+            let acc = 0, segs = '';
+            items.forEach(i => { const len = i.v / total * C; segs += `<circle cx="80" cy="80" r="${R}" fill="none" stroke="${i.color}" stroke-width="22" stroke-dasharray="${Math.max(len - 2, 0).toFixed(1)} ${(C - Math.max(len - 2, 0)).toFixed(1)}" stroke-dashoffset="${(-acc).toFixed(1)}" transform="rotate(-90 80 80)"><title>${i.label}: ${i.v}</title></circle>`; acc += len; });
+            box.innerHTML = `<svg viewBox="0 0 160 160" role="img" aria-label="Faults by hardware category"><circle cx="80" cy="80" r="${R}" fill="none" stroke="#0B1735" stroke-width="22"/>${segs}
+                <text x="80" y="78" text-anchor="middle" fill="#fff" font-size="26" font-weight="700" font-family="Arial">${total}</text><text x="80" y="95" text-anchor="middle" fill="#5C6C92" font-size="10" font-family="monospace">FAULTS</text></svg>
+                <div class="donut-leg">${items.sort((a, b) => b.v - a.v).map(i => `<div><i style="background:${i.color}"></i>${i.label}<span>${i.v}</span><em>${Math.round(i.v / total * 100)}%</em></div>`).join('')}</div>`;
+        }
+        function heatColor(t) {
+            const stops = [[15, 27, 62], [29, 78, 216], [239, 68, 68]], p = t <= .5 ? [stops[0], stops[1], t * 2] : [stops[1], stops[2], (t - .5) * 2];
+            return `rgb(${p[0].map((c, i) => Math.round(c + (p[1][i] - c) * p[2])).join(',')})`;
+        }
+        function heatmap(box, sf) {
+            const max = Math.max(1, ...Object.values(sf)); let html = '';
+            const colOf = { 'A-L': 1, 'A-R': 2, 'B-L': 4, 'B-R': 5 };
+            for (let row = 1; row <= 4; row++) {
+                Object.keys(colOf).forEach(c => {
+                    const id = c + row, v = sf[id] || 0;
+                    html += `<div class="h" style="grid-column:${colOf[c]};grid-row:${row};background:${heatColor(v / max)}" title="Server ${id}: ${v} fault(s) this week">${id}<small>${v}</small></div>`;
+                });
+            }
+            box.innerHTML = html;
+            const top = Object.entries(sf).sort((a, b) => b[1] - a[1])[0];
+            $('#heat-max').textContent = String(max);
+            $('#heat-note').innerHTML = `Hotspot: <b>${top[0]}</b> with ${top[1]} fault${top[1] > 1 ? 's' : ''} — worth a manual inspection.`;
+        }
+        function fleet(box, d, p) {
+            const modeT = modeInfo().t;
+            const e1 = sum(d.robotErrs), j1 = sum(d.robotJobs);
+            box.innerHTML = `<table class="fleet"><thead><tr><th>Robot</th><th>Jobs</th><th>Err</th><th>Uptime</th></tr></thead><tbody>
+                <tr><td><span class="dot" style="background:${S.estop || S.stalled ? '#EF4444' : S.running ? '#3B82F6' : '#10B981'}"></span><b class="mono">CRN-01</b><div style="font-size:11px;color:var(--dim);margin-left:15px">live · ${modeT}</div></td><td class="mono">${j1}</td><td class="mono">${(e1 / j1 * 100).toFixed(1)}%</td><td class="mono">${d.uptime.toFixed(1)}%</td></tr>
+                <tr><td><span class="dot" style="background:#5C6C92"></span><b class="mono">CRN-02</b><div style="font-size:11px;color:var(--dim);margin-left:15px">standby · mock</div></td><td class="mono">${d.crn2.jobs}</td><td class="mono">${(d.crn2.err / d.crn2.jobs * 100).toFixed(1)}%</td><td class="mono">${d.crn2.up.toFixed(1)}%</td></tr></tbody></table>
+                <div class="fleet-sum"><div><b>${j1 + d.crn2.jobs}</b><span>jobs · fleet total</span></div><div><b>${((e1 + d.crn2.err) / (j1 + d.crn2.jobs) * 100).toFixed(1)}%</b><span>fleet error rate</span></div></div>`;
+        }
+
+        let logFilter = 'all', logQuery = '';
+        function renderDashLog() {
+            const q = logQuery.trim().toLowerCase();
+            const rows = LOG.slice().reverse().filter(e => (logFilter === 'all' || e.k === logFilter) && (!q || e.m.toLowerCase().includes(q)));
+            $('#dlog-meta').textContent = `${rows.length} of ${LOG.length} entries · stored in this browser`;
+            $('#dlog').innerHTML = rows.slice(0, 200).map(e => `<div class="r ${e.k}"><span class="t">${fmtT(e.t)}</span><span class="k">${e.k === 'ok' ? 'resolved' : e.k}</span><span class="m">${esc(e.m)}</span></div>`).join('') || '<div class="empty" style="padding:14px 0">No log entries match.</div>';
+        }
+        let dashTimer = null, logTimer = null;
+        const renderDashboardSoon = () => { clearTimeout(dashTimer); dashTimer = setTimeout(renderDashboard, 200); };
+        const renderDashLogSoon = () => { clearTimeout(logTimer); logTimer = setTimeout(renderDashLog, 150); };
+        function renderDashboard() {
+            const w = S.week, d = getWeek(w), p = w < 2 ? getWeek(w + 1) : null;
+            renderKpis(d, p);
+            lineChart($('#ch-err'), d.labels, [{ name: 'Servers with a fault', color: '#F87171', values: d.serverErr }, { name: 'Robot jobs with an error', color: '#38BDF8', values: d.robotErrPct }], Math.max(30, Math.ceil(Math.max(...d.serverErr, ...d.robotErrPct) / 10) * 10));
+            barChart($('#ch-jobs'), d.labels, [{ name: 'Auto-fix', color: '#3B82F6', values: d.jobs.auto }, { name: 'Human assist', color: '#F59E0B', values: d.jobs.human }, { name: 'Manual', color: '#22D3EE', values: d.jobs.manual }]);
+            const tj = totalJobs(d); $('#jobs-badge').textContent = `${tj} total · ${(tj / 7).toFixed(1)}/day`;
+            donut($('#ch-cat'), d.faultCats); heatmap($('#ch-heat'), d.serverFaults); fleet($('#ch-fleet'), d, p);
+            renderDashLog();
+        }
+
+        /* ============================================================
+           Tabs + wiring
+        ============================================================ */
+        function showTab(name, push = true) {
+            S.tab = name;
+            $$('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
+            $('#view-sim').hidden = name !== 'sim'; $('#view-dash').hidden = name !== 'dash';
+            if (name === 'dash') { held.length = 0; renderDashboard(); } else fitMap();
+            if (push) { try { history.replaceState(null, '', name === 'dash' ? '#dashboard' : '#simulation'); } catch (e) { /* file:// */ } }
+        }
+        $$('.tab').forEach(t => {
+            t.addEventListener('click', () => showTab(t.dataset.tab));
+            t.addEventListener('keydown', e => {
+                if (!['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+                e.preventDefault(); const tabs = $$('.tab'), i = tabs.indexOf(t), n = tabs[(i + (e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+                n.focus(); showTab(n.dataset.tab);
+            });
+        });
+        $$('#sc-seg button').forEach(b => b.addEventListener('click', () => startScenario(b.dataset.sc)));
+        $('#chk-manual').addEventListener('change', e => setManual(e.target.checked));
+        $('#btn-scan').addEventListener('click', manualScan);
+        $('#btn-swap').addEventListener('click', manualSwap);
+        $('#btn-resume').addEventListener('click', resumeAuto);
+        $('#btn-dock').addEventListener('click', returnToDock);
+        $('#btn-inject').addEventListener('click', () => {
+            const hit = injectFaults({ revealed: true });
+            if (!hit.length) { log('All servers already have open faults.', 'system'); return; }
+            log(`⚠️ ALERT: ${hit.length} server(s) reporting component faults — ${hit.map(s => `Server ${s.id} (${compNames(s)})`).join('; ')}.`, 'alert');
+        });
+        $('#btn-clear-log').addEventListener('click', () => { LOG = []; store.set(LOG_KEY, LOG); log('Log cleared.', 'system'); });
+        $$('#week-seg button').forEach(b => b.addEventListener('click', () => { S.week = +b.dataset.w; $$('#week-seg button').forEach(x => x.classList.toggle('on', x === b)); renderDashboard(); }));
+        $$('#lf-seg button').forEach(b => b.addEventListener('click', () => { logFilter = b.dataset.k; $$('#lf-seg button').forEach(x => x.classList.toggle('on', x === b)); renderDashLog(); }));
+        $('#lf-q').addEventListener('input', e => { logQuery = e.target.value; renderDashLog(); });
+
+        // recharge while parked at the dock
+        setInterval(() => { if (S.robot.x === DOCK.x && S.robot.y === DOCK.y && S.robot.battery < 100) { S.robot.battery = Math.min(100, S.robot.battery + 1.2); updatePos(); } }, 1000);
+
+        /* ============================================================
+           Init
+        ============================================================ */
+        buildMap(); fitMap(); renderAllServers(); renderSimLog(); renderOrders(); camIdle(); updateHud(); padStatus();
+        log('System initialized. Library layout loaded — 2 stacks, 16 servers, 1 robot dock. Dijkstra pathfinding engine ready.', 'system');
+        showTab(location.hash === '#dashboard' ? 'dash' : 'sim', false);
+    })();
     </script>
 </body>
 
