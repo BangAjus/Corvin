@@ -51,8 +51,8 @@ Rules carried over from Rev C (§3.4, §8): Tier 3 sends **intents**, never raw 
 | **Positioning vs identity** | **ArUco** marker → slot *position*. **Barcode** → server *identity*. Both are logged and shown in the camera POV. |
 | **Faults** | A server can have **several faulty components across categories** (Compute, Memory, Power, Network, Storage, Cooling). Each component is swapped separately. |
 | **Modes** | `AUTO` (Scenario B), `HUMAN ASSIST` (Scenario C, hidden faults, human walks and scans), `MANUAL`, `STALLED`, `E-STOP`. |
-| **Dashboard** | Mock weekly data (deterministic) blended with live events from the simulation (today's bars, active faults). |
-| **Server log** | Lives in the Detection Simulation tab; the real simulation log, kept in the browser between sessions. |
+| **Dashboard** | Three KPIs, a hardware reliability watch (which component type keeps failing → review the supplier), plain-language "needs attention" findings, error-rate and jobs charts with spike markers. Mock weekly data blended with live simulation events. |
+| **Server log** | Lives in the Detection Simulation tab as a collapsible panel (one-line ticker when closed, new-alert badge). The real simulation log, kept in the browser between sessions. |
 
 ---
 

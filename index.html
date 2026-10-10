@@ -52,7 +52,8 @@
         /* ------------------------------------------------------------ */
         /* App shell + left tab rail                                     */
         /* ------------------------------------------------------------ */
-        .app { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 100vh; }
+        .app { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 100vh; transition: grid-template-columns .22s ease; }
+        .app.collapsed { grid-template-columns: 68px minmax(0, 1fr); }
 
         .rail {
             position: sticky; top: 0; height: 100vh;
@@ -86,6 +87,22 @@
         .tab[aria-selected="true"] .ic { color: var(--cyan); }
         .tab b { display: block; font-size: 13.5px; }
         .tab small { display: block; font-size: 11px; color: var(--dim); margin-top: 1px; }
+
+        .rail-toggle {
+            margin-top: auto; display: flex; align-items: center; gap: 10px; width: 100%;
+            padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: #070D1B;
+            color: var(--muted); font-size: 12px; font-weight: 700; transition: .15s;
+        }
+        .rail-toggle:hover { color: #fff; border-color: #3B6BE0; }
+        .rail-toggle .ic { transition: transform .2s; }
+        .app.collapsed .rail-toggle .ic { transform: rotate(180deg); }
+        .app.collapsed .rail { padding: 20px 11px; align-items: center; }
+        .app.collapsed .brand { padding: 2px 0 14px; }
+        .app.collapsed .tab { justify-content: center; width: 46px; padding: 11px 0; }
+        .app.collapsed .rail-toggle { justify-content: center; width: 46px; padding: 10px 0; }
+        .app.collapsed .wm, .app.collapsed .rail-label, .app.collapsed .tab > span, .app.collapsed .rail-toggle > span {
+            position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+        }
 
         main { min-width: 0; padding: 18px 22px 22px; }
 
@@ -152,12 +169,23 @@
         /* ------------------------------------------------------------ */
         /* Detection simulation                                          */
         /* ------------------------------------------------------------ */
-        .sim { display: grid; grid-template-columns: minmax(0, 1fr) 348px; gap: 16px; align-items: start; }
+        .sim { display: grid; grid-template-columns: minmax(0, 1fr) 348px; gap: 16px; align-items: start; transition: grid-template-columns .22s ease; }
+        /* focus mode (sidebar hidden): bigger camera, controller + work orders side by side */
+        .app.collapsed .sim { grid-template-columns: minmax(0, 1fr) clamp(420px, 42vw, 680px); }
+        .app.collapsed .sim-right { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-content: start; }
+        .app.collapsed #card-cam, .app.collapsed #card-tel { grid-column: 1 / -1; }
+        .app.collapsed .cam { aspect-ratio: 1.9 / 1; }
+        .app.collapsed .cap { padding: 8px 14px; }
+        .app.collapsed #card-tel .card-b { padding: 12px 14px; }
+        .app.collapsed .pad { grid-template-columns: repeat(3, 46px); grid-template-rows: repeat(3, 46px); gap: 6px; margin: 0 0 10px; }
+        .app.collapsed .hint .gp { display: none; }
         .sim-left { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
         .sim-right { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 18px; max-height: calc(100vh - 36px); overflow-y: auto; padding-right: 4px; }
         .bar h1 .pill { font-size: 10px; vertical-align: middle; }
 
-        .map-card { flex: none; height: clamp(440px, calc(100vh - 330px), 820px); display: flex; flex-direction: column; overflow: hidden; }
+        .sim-left { --logh: 50px; }
+        .sim-left.log-open { --logh: 244px; }
+        .map-card { flex: none; height: clamp(440px, calc(100vh - 150px - var(--logh)), 880px); display: flex; flex-direction: column; overflow: hidden; transition: height .2s ease; }
         .banner { display: none; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #5B1220; background: linear-gradient(90deg, #2B0A10, #160A12); color: #FDA4AF; font-size: 12.5px; }
         .banner.on { display: flex; }
         .banner b { color: #fff; }
@@ -251,8 +279,21 @@
         .legend .it { display: inline-flex; align-items: center; gap: 7px; }
         .sw { width: 12px; height: 12px; border-radius: 3px; flex: none; border: 1px solid #243B73; }
 
-        .log-card { height: 176px; flex: none; display: flex; flex-direction: column; min-height: 0; }
-        .log-b { flex: 1; min-height: 0; overflow: auto; padding: 8px 14px; font: 12px/1.55 var(--mono); }
+                .log-card { flex: none; display: flex; flex-direction: column; }
+        .log-h { padding: 0 8px 0 0; }
+        .log-toggle { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 11px 14px; text-align: left; color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit; }
+        .log-toggle:hover .ttl { color: #fff; }
+        .log-toggle .chev { width: 16px; height: 16px; transition: transform .2s; flex: none; }
+        .log-card[data-open="false"] .chev { transform: rotate(-90deg); }
+        .log-toggle .count { font: 700 10px var(--mono); padding: 2px 7px; border-radius: 999px; background: #0B1735; border: 1px solid #243B73; color: #9DB4EA; flex: none; }
+        .log-toggle .new { display: none; font: 700 10px var(--mono); padding: 2px 7px; border-radius: 999px; background: #3A0F1A; border: 1px solid #991B1B; color: #FCA5A5; flex: none; }
+        .log-toggle .new.on { display: inline-block; }
+        .ticker { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 400 12px var(--mono); letter-spacing: 0; text-transform: none; color: #A9B9DD; }
+        .ticker .t { color: #4F6192; margin-right: 8px; }
+        .ticker.alert { color: #FCA5A5; } .ticker.ok { color: #6EE7B7; } .ticker.robot { color: #93C5FD; } .ticker.human { color: #FCD34D; }
+        .log-card[data-open="true"] .ticker, .log-card[data-open="false"] #btn-clear-log { display: none; }
+        .log-b { height: 0; overflow: hidden; padding: 0 14px; font: 12px/1.55 var(--mono); transition: height .2s ease, padding .2s ease; }
+        .log-card[data-open="true"] .log-b { height: 194px; overflow: auto; padding: 8px 14px; }
         .ln { display: flex; gap: 10px; padding: 1px 0; }
         .ln .t { color: #4F6192; flex: none; }
         .ln .m { color: #A9B9DD; min-width: 0; overflow-wrap: anywhere; }
@@ -285,6 +326,10 @@
         @keyframes flow { to { stroke-dashoffset: -14; } }
         .cap { padding: 10px 14px; font-size: 12px; color: var(--muted); border-top: 1px solid #101C3A; }
 
+        .tele { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+        .app.collapsed .tele { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .tl span { display: block; font-size: 11px; color: var(--dim); margin-bottom: 3px; }
+        .tl b { display: block; font: 600 12.5px var(--mono); color: #D5E1FF; overflow-wrap: anywhere; }
         .kv { display: grid; grid-template-columns: auto 1fr; gap: 7px 12px; font-size: 12.5px; align-items: center; }
         .kv dt { color: var(--dim); }
         .kv dd { color: #D5E1FF; text-align: right; font: 12px var(--mono); }
@@ -345,32 +390,34 @@
         .tip b { display: block; color: #fff; margin-bottom: 2px; }
         .tip i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
 
-        .donut-wrap { display: flex; align-items: center; gap: 18px; }
-        .donut-wrap svg { width: 150px; height: 150px; flex: none; }
-        .donut-leg { flex: 1; display: grid; gap: 7px; font-size: 12px; }
-        .donut-leg div { display: flex; align-items: center; gap: 8px; }
-        .donut-leg i { width: 9px; height: 9px; border-radius: 3px; flex: none; }
-        .donut-leg span { margin-left: auto; font: 12px var(--mono); color: #D5E1FF; }
-        .donut-leg em { font-style: normal; color: var(--dim); font: 11px var(--mono); width: 36px; text-align: right; }
+        .hw-head, .hw-row { display: grid; grid-template-columns: minmax(130px, 1.15fr) minmax(0, 2fr) 38px 56px 112px; gap: 12px; align-items: center; }
+        .hw-head { font: 700 10px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); padding-bottom: 8px; }
+        .hw-head span:nth-child(3), .hw-head span:nth-child(4) { text-align: right; }
+        .hw-row { padding: 9px 0; border-top: 1px solid #101C3A; }
+        .hw-n b { font-size: 13px; display: flex; align-items: center; gap: 8px; }
+        .hw-n b i { width: 8px; height: 8px; border-radius: 3px; flex: none; }
+        .hw-n small { display: block; color: var(--dim); font-size: 11px; margin: 1px 0 0 16px; }
+        .hw-track { position: relative; height: 10px; border-radius: 99px; background: #0B1735; }
+        .hw-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 99px; }
+        .hw-prev { position: absolute; top: -4px; bottom: -4px; width: 2px; border-radius: 2px; background: #E8EEFC; opacity: .9; }
+        .hw-v { font: 700 14px var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+        .hw-d { font: 700 11px var(--mono); text-align: right; }
+        .hw-d.up { color: #FCA5A5; } .hw-d.down { color: #6EE7B7; } .hw-d.flat { color: var(--dim); }
+        .hw-st { font: 700 9.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; padding: 4px 7px; border-radius: 6px; text-align: center; border: 1px solid; white-space: nowrap; }
+        .hw-st.review { background: #3A0F1A; color: #FCA5A5; border-color: #991B1B; }
+        .hw-st.watch { background: #2A1D05; color: #FCD34D; border-color: #8A5A0A; }
+        .hw-st.ok { background: #052E22; color: #6EE7B7; border-color: #065F46; }
+        .hw-key { margin-top: 12px; font-size: 11.5px; color: var(--dim); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+        .hw-key i { display: inline-block; width: 2px; height: 12px; background: #E8EEFC; margin-right: 6px; vertical-align: -2px; }
 
-        .heat { display: grid; grid-template-columns: 1fr 1fr 20px 1fr 1fr; gap: 6px; }
-        .heat .gap { grid-row: 1 / span 4; }
-        .heat .h { aspect-ratio: 1.15; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255, 255, 255, .06); font: 700 11px var(--mono); color: #fff; }
-        .heat .h small { font-weight: 400; font-size: 10px; opacity: .8; }
-        .heat-leg { display: flex; align-items: center; gap: 8px; margin-top: 12px; font: 10.5px var(--mono); color: var(--dim); }
-        .heat-leg .grad { flex: 1; height: 6px; border-radius: 99px; background: linear-gradient(90deg, #0F1B3E, #1D4ED8, #EF4444); }
-        .heat-note { margin-top: 8px; font-size: 12px; color: var(--muted); }
-        .heat-note b { color: #fff; font-family: var(--mono); }
-
-        table.fleet { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-        .fleet th { text-align: left; font: 700 10px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); padding: 0 6px 8px; }
-        .fleet td { padding: 10px 6px; border-top: 1px solid #101C3A; font-variant-numeric: tabular-nums; }
-        .fleet td.mono { font-family: var(--mono); }
-        .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; }
-        .fleet-sum { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .fleet-sum div { background: #070D1B; border: 1px solid #101C3A; border-radius: 10px; padding: 10px 12px; }
-        .fleet-sum b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
-        .fleet-sum span { font-size: 11px; color: var(--dim); }
+        .attn { display: grid; gap: 10px; }
+        .at { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 12px; padding: 12px 14px; border: 1px solid #101C3A; border-radius: 12px; background: #070D1B; }
+        .at > i { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; }
+        .at.bad > i { background: #EF4444; box-shadow: 0 0 10px rgba(239, 68, 68, .6); }
+        .at.warn > i { background: #F59E0B; box-shadow: 0 0 10px rgba(245, 158, 11, .45); }
+        .at.ok > i { background: #10B981; }
+        .at b { display: block; font-size: 13.5px; margin-bottom: 2px; }
+        .at p { font-size: 12.5px; color: var(--muted); }
 
         .foot-note { margin-top: 14px; font-size: 11.5px; color: var(--dim); }
 
@@ -386,6 +433,7 @@
             .map-card { height: 560px; }
             .span-3 { grid-column: span 6; }
             .span-4, .span-5, .span-7, .span-8 { grid-column: span 12; }
+            .dash .kpi.span-4 { grid-column: span 4; }
         }
         @media (max-width: 860px) {
             .app { grid-template-columns: 1fr; }
@@ -394,8 +442,11 @@
             .brand { padding: 0 10px 0 0; }
             .tab { width: auto; }
             main { padding: 14px; }
-            .span-3 { grid-column: span 12; }
-            .donut-wrap { flex-direction: column; align-items: flex-start; }
+            .span-3, .dash .kpi.span-4 { grid-column: span 12; }
+            .hw-head { display: none; }
+            .hw-row { grid-template-columns: minmax(0, 1fr) 38px 56px; }
+            .hw-row .hw-track { grid-column: 1 / -1; order: 5; }
+            .hw-row .hw-st { grid-column: 1 / -1; order: 6; }
         }
         @media (prefers-reduced-motion: reduce) {
             .srv-card, .rec, .flow, .scanline, .burst { animation: none !important; }
@@ -443,30 +494,33 @@
         </defs>
     </svg>
 
-    <div class="app">
+    <div class="app" id="app">
         <!-- ============ left tab view ============ -->
         <nav class="rail" role="tablist" aria-orientation="vertical" aria-label="Views">
             <div class="brand">
                 <div class="brand-mark"><svg><use href="#i-server" /></svg></div>
-                <div><b>CORVIN</b><small>Rack maintenance robot</small></div>
+                <div class="wm"><b>CORVIN</b><small>Rack maintenance robot</small></div>
             </div>
             <div class="rail-label">Views</div>
-            <button class="tab" role="tab" id="tab-sim" data-tab="sim" aria-selected="true" aria-controls="view-sim">
+            <button class="tab" role="tab" id="tab-sim" data-tab="sim" aria-selected="true" aria-controls="view-sim" title="Detection Simulation">
                 <svg class="ic"><use href="#i-scan" /></svg>
                 <span><b>Detection Simulation</b><small>Map · camera · control</small></span>
             </button>
-            <button class="tab" role="tab" id="tab-dash" data-tab="dash" aria-selected="false" aria-controls="view-dash">
+            <button class="tab" role="tab" id="tab-dash" data-tab="dash" aria-selected="false" aria-controls="view-dash" title="Dashboard">
                 <svg class="ic"><use href="#i-chart" /></svg>
                 <span><b>Dashboard</b><small>Weekly · jobs · fault trends</small></span>
             </button>
 
+            <button class="rail-toggle" id="rail-toggle" aria-expanded="true" aria-controls="app" title="Hide sidebar — more room for the map and camera">
+                <svg class="ic"><use href="#i-left" /></svg><span>Hide sidebar</span>
+            </button>
         </nav>
 
         <main>
             <!-- ============ DETECTION SIMULATION ============ -->
             <section class="view" id="view-sim" role="tabpanel" aria-labelledby="tab-sim">
                 <div class="sim">
-                    <div class="sim-left">
+                    <div class="sim-left" id="sim-left">
                         <div class="bar">
                             <div>
                                 <h1 style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">Detection Simulation <span id="mode-pill"></span></h1>
@@ -502,14 +556,23 @@
                             </div>
                         </div>
 
-                        <div class="card log-card">
-                            <div class="card-h"><span>Server log</span><button class="btn sm" id="btn-clear-log" title="Clears the stored log">Clear</button></div>
+                        <div class="card log-card" id="log-card" data-open="false">
+                            <div class="card-h log-h">
+                                <button class="log-toggle" id="log-toggle" aria-expanded="false" aria-controls="sim-log" title="Show or hide the server log">
+                                    <svg class="ic chev"><use href="#i-down" /></svg>
+                                    <span class="ttl">Server log</span>
+                                    <span class="count" id="log-count">0</span>
+                                    <span class="new" id="log-new"></span>
+                                    <span class="ticker" id="log-ticker"></span>
+                                </button>
+                                <button class="btn sm" id="btn-clear-log" title="Clears the stored log">Clear</button>
+                            </div>
                             <div class="log-b" id="sim-log" aria-live="polite"></div>
                         </div>
                     </div>
 
                     <aside class="sim-right" aria-label="Camera, telemetry and manual control">
-                        <div class="card">
+                        <div class="card" id="card-cam">
                             <div class="card-h"><span>Camera POV</span><span class="pill" style="font-size:9.5px">synthetic feed</span></div>
                             <div class="cam" id="cam">
                                 <div class="cam-scene" id="cam-scene"></div>
@@ -525,20 +588,17 @@
                             <div class="cap" id="cam-cap">Camera idle — no active feed.</div>
                         </div>
 
-                        <div class="card">
+                        <div class="card" id="card-tel">
                             <div class="card-h"><span>Robot telemetry</span><span id="t-mode"></span></div>
-                            <div class="card-b">
-                                <dl class="kv">
-                                    <dt>Position</dt><dd id="t-pos">—</dd>
-                                    <dt>Facing</dt><dd id="t-face">—</dd>
-                                    <dt>Link</dt><dd>SIM · local</dd>
-                                </dl>
-                                <div class="kv" style="margin-top:9px;grid-template-columns:1fr auto"><span style="color:var(--dim)">Battery</span><dd id="t-batt" style="text-align:right;font:12px var(--mono);color:#D5E1FF">100%</dd></div>
-                                <div class="meter"><i id="t-batt-bar" style="width:100%"></i></div>
+                            <div class="card-b tele">
+                                <div class="tl"><span>Position</span><b id="t-pos">—</b></div>
+                                <div class="tl"><span>Facing</span><b id="t-face">—</b></div>
+                                <div class="tl"><span>Link</span><b>SIM · local</b></div>
+                                <div class="tl"><span>Battery</span><b id="t-batt">100%</b><div class="meter"><i id="t-batt-bar" style="width:100%"></i></div></div>
                             </div>
                         </div>
 
-                        <div class="card">
+                        <div class="card" id="card-man">
                             <div class="card-h">
                                 <span>Manual control</span>
                                 <label class="switch"><input type="checkbox" id="chk-manual"><span class="tr"></span> Manual</label>
@@ -565,12 +625,12 @@
                                 </div>
                                 <p class="hint">
                                     <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows drive · press toward a shelf to face it · <kbd>Space</kbd> scan · <kbd>E</kbd> swap · <kbd>Esc</kbd> e-stop.<br>
-                                    Gamepad: <span id="pad-status">not detected</span>
+                                    <span class="gp">Gamepad: <span id="pad-status">not detected</span></span>
                                 </p>
                             </div>
                         </div>
 
-                        <div class="card">
+                        <div class="card" id="card-wo">
                             <div class="card-h"><span>Work orders <span id="wo-count" style="color:var(--dim);margin-left:4px"></span></span><button class="btn sm" id="btn-inject" title="Add 2–3 random visible faults">+ Inject faults</button></div>
                             <div class="card-b" id="wo-list"></div>
                         </div>
@@ -592,10 +652,19 @@
                 </div>
 
                 <div class="dash">
-                    <article class="card kpi span-3" id="kpi-jobs"></article>
-                    <article class="card kpi span-3" id="kpi-success"></article>
-                    <article class="card kpi span-3" id="kpi-cycle"></article>
-                    <article class="card kpi span-3" id="kpi-faults"></article>
+                    <article class="card kpi span-4" id="kpi-faults"></article>
+                    <article class="card kpi span-4" id="kpi-jobs"></article>
+                    <article class="card kpi span-4" id="kpi-success"></article>
+
+                    <article class="card span-7">
+                        <div class="card-h"><span>Hardware reliability watch</span><span style="color:var(--dim);text-transform:none;letter-spacing:0;font-weight:400" id="hw-sub"></span></div>
+                        <div class="card-b" id="ch-hw"></div>
+                    </article>
+
+                    <article class="card span-5">
+                        <div class="card-h"><span>Needs attention</span><span id="attn-count" class="pill"></span></div>
+                        <div class="card-b"><div class="attn" id="attn"></div></div>
+                    </article>
 
                     <article class="card span-7">
                         <div class="card-h"><span>Error rate · servers vs robots</span>
@@ -611,28 +680,8 @@
                             <div class="lg" style="margin-top:10px"><span><i style="background:#3B82F6"></i>Auto-fix</span><span><i style="background:#F59E0B"></i>Human assist</span><span><i style="background:#22D3EE"></i>Manual</span></div>
                         </div>
                     </article>
-
-                    <article class="card span-4">
-                        <div class="card-h"><span>Faults by hardware category</span></div>
-                        <div class="card-b"><div class="donut-wrap" id="ch-cat"></div></div>
-                    </article>
-
-                    <article class="card span-4">
-                        <div class="card-h"><span>Server fault heatmap</span><span style="color:var(--dim);text-transform:none;letter-spacing:0;font-weight:400">faults / week</span></div>
-                        <div class="card-b">
-                            <div class="heat" id="ch-heat"></div>
-                            <div class="heat-leg"><span>0</span><div class="grad"></div><span id="heat-max">max</span></div>
-                            <div class="heat-note" id="heat-note"></div>
-                        </div>
-                    </article>
-
-                    <article class="card span-4">
-                        <div class="card-h"><span>Robot fleet</span></div>
-                        <div class="card-b" id="ch-fleet"></div>
-                    </article>
-
                 </div>
-                <p class="foot-note">Weekly figures are deterministic mock data. Today's bars and the active-fault count are live: they come from what you run in the Detection Simulation and are stored in this browser. The server log lives in the Detection Simulation tab.</p>
+                <p class="foot-note">Weekly figures are deterministic mock data. Today's bars, hardware counts and the active-fault count are live: they come from what you run in the Detection Simulation and are stored in this browser. Supplier names are placeholders. The server log lives in the Detection Simulation tab.</p>
             </section>
         </main>
     </div>
@@ -683,13 +732,13 @@
             cooling: { label: 'Cooling', color: '#F472B6' },
         };
         const COMPONENTS = [
-            { key: 'cpu', name: 'CPU Module', abbr: 'CPU', cat: 'compute' },
-            { key: 'gpu', name: 'GPU Module', abbr: 'GPU', cat: 'compute' },
-            { key: 'ram', name: 'RAM Bank', abbr: 'RAM', cat: 'memory' },
-            { key: 'psu', name: 'PSU', abbr: 'PSU', cat: 'power' },
-            { key: 'nic', name: 'NIC / Network Card', abbr: 'NIC', cat: 'network' },
-            { key: 'disk', name: 'Storage Disk', abbr: 'DSK', cat: 'storage' },
-            { key: 'fan', name: 'Cooling Fan', abbr: 'FAN', cat: 'cooling' },
+            { key: 'cpu', name: 'CPU Module', abbr: 'CPU', cat: 'compute', brand: 'Supplier A' },
+            { key: 'gpu', name: 'GPU Module', abbr: 'GPU', cat: 'compute', brand: 'Supplier B' },
+            { key: 'ram', name: 'RAM Bank', abbr: 'RAM', cat: 'memory', brand: 'Supplier C' },
+            { key: 'psu', name: 'PSU', abbr: 'PSU', cat: 'power', brand: 'Supplier D' },
+            { key: 'nic', name: 'NIC / Network Card', abbr: 'NIC', cat: 'network', brand: 'Supplier E' },
+            { key: 'disk', name: 'Storage Disk', abbr: 'DSK', cat: 'storage', brand: 'Supplier F' },
+            { key: 'fan', name: 'Cooling Fan', abbr: 'FAN', cat: 'cooling', brand: 'Supplier G' },
         ];
         const comp = key => COMPONENTS.find(c => c.key === key);
         const cname = key => comp(key).name;
@@ -786,10 +835,11 @@
         const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
         const freshStats = () => ({
             date: todayKey(), jobs: { auto: 0, human: 0, manual: 0 }, robotJobs: 0, robotErrors: 0, faultServers: 0,
-            faultCats: Object.fromEntries(Object.keys(CATS).map(k => [k, 0])), serverFaults: {},
+            faultComps: Object.fromEntries(COMPONENTS.map(c => [c.key, 0])), serverFaults: {},
         });
         let live = store.get(STATS_KEY, null);
         if (!live || live.date !== todayKey()) live = freshStats();
+        if (!live.faultComps) live.faultComps = Object.fromEntries(COMPONENTS.map(c => [c.key, 0]));
         const saveStats = () => { store.set(STATS_KEY, live); if (S.tab === 'dash') renderDashboardSoon(); };
         const bumpJob = mode => { live.jobs[mode]++; live.robotJobs++; saveStats(); };
         const bumpRobotError = () => { live.robotErrors++; saveStats(); };
@@ -797,7 +847,7 @@
             list.forEach(s => {
                 live.faultServers++;
                 live.serverFaults[s.id] = (live.serverFaults[s.id] || 0) + 1;
-                s.faults.forEach(f => { live.faultCats[comp(f.comp).cat]++; });
+                s.faults.forEach(f => { live.faultComps[f.comp] = (live.faultComps[f.comp] || 0) + 1; });
             });
             saveStats();
         }
@@ -809,12 +859,29 @@
             return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + fmtClock(ts);
         }
         const simLog = $('#sim-log');
+        let logOpen = store.get('corvin.logOpen', false), unreadAlerts = 0;
         function renderSimLog() {
             simLog.innerHTML = LOG.slice(-70).reverse().map(e => `<div class="ln ${e.k}"><span class="t">${fmtT(e.t)}</span><span class="m">${esc(e.m)}</span></div>`).join('');
+            const last = LOG[LOG.length - 1], tk = $('#log-ticker');
+            $('#log-count').textContent = LOG.length;
+            tk.className = 'ticker ' + (last ? last.k : '');
+            tk.innerHTML = last ? `<span class="t">${fmtT(last.t)}</span>${esc(last.m)}` : '';
+            const nw = $('#log-new');
+            nw.textContent = unreadAlerts === 1 ? '1 new alert' : unreadAlerts + ' new alerts';
+            nw.classList.toggle('on', unreadAlerts > 0 && !logOpen);
+        }
+        function setLogOpen(open) {
+            logOpen = open; store.set('corvin.logOpen', open);
+            if (open) unreadAlerts = 0;
+            $('#log-card').dataset.open = String(open);
+            $('#log-toggle').setAttribute('aria-expanded', String(open));
+            $('#sim-left').classList.toggle('log-open', open);
+            renderSimLog();
         }
         function log(msg, kind = 'system') {
             LOG.push({ t: Date.now(), k: kind, m: msg });
             if (LOG.length > 500) LOG.splice(0, LOG.length - 500);
+            if (kind === 'alert' && !logOpen) unreadAlerts++;
             saveLogSoon(); renderSimLog();
         }
 
@@ -1544,10 +1611,11 @@
                 robotErrs.push(Math.max(0, Math.round(total * (.07 + rng() * .1) + trend * .25)));
                 serverErr.push(clamp(ri(9, 26) + trend * 1.5 + rng(), 3, 60));
             }
-            const faultCats = { compute: ri(10, 18), memory: ri(5, 10), power: ri(6, 12), network: ri(8, 14), storage: ri(12, 20), cooling: ri(9, 16) };
-            const serverFaults = {}; servers.forEach(s => { serverFaults[s.id] = ri(0, 4) + (['A-R3', 'B-L2', 'A-L4'].includes(s.id) ? ri(2, 4) : 0); });
-            const cycle = ri(88, 104), cycleDaily = labels.map(() => cycle + ri(-9, 9));
-            return { labels, jobs, robotJobs, robotErrs, serverErr, faultCats, serverFaults, cycle, cycleDaily, uptime: 97.4 + rng() * 2.2, crn2: { jobs: ri(18, 30), err: ri(1, 3), up: 94 + rng() * 4 } };
+            // a clear "this part keeps failing" story in the mock data: PSU climbing, fan creeping up
+            const faultComps = {}; COMPONENTS.forEach(c => { faultComps[c.key] = ri(3, 7); });
+            if (w === 0) { faultComps.psu += 8; faultComps.fan += 2; } else if (w === 1) { faultComps.psu += 3; }
+            const serverFaults = {}; servers.forEach(s => { serverFaults[s.id] = ri(0, 3) + (['A-R3'].includes(s.id) && w === 0 ? ri(5, 6) : 0); });
+            return { labels, jobs, robotJobs, robotErrs, serverErr, faultComps, serverFaults };
         }
         const WEEKS = [buildWeek(0), buildWeek(1), buildWeek(2)];
         function getWeek(w) {
@@ -1557,14 +1625,18 @@
                 d.jobs.auto[i] += live.jobs.auto; d.jobs.human[i] += live.jobs.human; d.jobs.manual[i] += live.jobs.manual;
                 d.robotJobs[i] += live.robotJobs; d.robotErrs[i] += live.robotErrors;
                 d.serverErr[i] = Math.min(100, d.serverErr[i] + live.faultServers * 100 / servers.length);
-                Object.keys(CATS).forEach(c => { d.faultCats[c] += live.faultCats[c] || 0; });
+                COMPONENTS.forEach(c => { d.faultComps[c.key] += live.faultComps[c.key] || 0; });
                 Object.keys(live.serverFaults).forEach(id => { d.serverFaults[id] = (d.serverFaults[id] || 0) + live.serverFaults[id]; });
             }
             d.robotErrPct = d.robotErrs.map((e, i) => d.robotJobs[i] ? e / d.robotJobs[i] * 100 : 0);
+            d.dayTotals = d.jobs.auto.map((v, i) => v + d.jobs.human[i] + d.jobs.manual[i]);
             return d;
         }
         const sum = a => a.reduce((x, y) => x + y, 0);
-        const totalJobs = d => sum(d.jobs.auto) + sum(d.jobs.human) + sum(d.jobs.manual);
+        const mean = a => a.length ? sum(a) / a.length : 0;
+        const totalJobs = d => sum(d.dayTotals);
+        // a day is a "spike" when it is ≥ 1.4× the average of the other days
+        const spikeDays = tot => tot.map((v, i) => { const rest = tot.filter((_, j) => j !== i); return v >= 4 && v >= 1.4 * mean(rest); });
 
         function spark(vals, color) {
             const w = 90, h = 26, mx = Math.max(...vals, 1), mn = Math.min(...vals, 0);
@@ -1580,13 +1652,70 @@
         function renderKpis(d, p) {
             const tj = totalJobs(d), pj = p ? totalJobs(p) : null;
             const succ = 100 - sum(d.robotErrs) / sum(d.robotJobs) * 100, psucc = p ? 100 - sum(p.robotErrs) / sum(p.robotJobs) * 100 : null;
-            const dayTot = d.jobs.auto.map((v, i) => v + d.jobs.human[i] + d.jobs.manual[i]);
-            $('#kpi-jobs').innerHTML = `<div class="kpi-l">Jobs completed</div><div class="kpi-v">${tj}<small>jobs / 7 days</small></div><div class="kpi-f">${dpill(tj, pj, true)}${spark(dayTot, '#3B82F6')}</div>`;
-            $('#kpi-success').innerHTML = `<div class="kpi-l">Robot success rate</div><div class="kpi-v">${succ.toFixed(1)}<small>%</small></div><div class="kpi-f">${dpill(succ, psucc, true, ' pts', true)}${spark(d.robotErrPct.map(v => 100 - v), '#10B981')}</div>`;
-            $('#kpi-cycle').innerHTML = `<div class="kpi-l">Avg cycle / server</div><div class="kpi-v">${d.cycle}<small>s</small></div><div class="kpi-f">${dpill(d.cycle, p ? p.cycle : null, false, ' s', true)}${spark(d.cycleDaily, '#F59E0B')}</div>`;
             const open = servers.reduce((n, s) => n + s.faults.filter(f => f.revealed && f.status !== 'fixed').length, 0);
             const srvOpen = servers.filter(s => s.faults.some(f => f.revealed && f.status !== 'fixed')).length;
-            $('#kpi-faults').innerHTML = `<div class="kpi-l">Active faults · live</div><div class="kpi-v" style="color:${open ? '#FCA5A5' : '#6EE7B7'}">${open}<small>${open ? `on ${srvOpen} server${srvOpen > 1 ? 's' : ''}` : 'all clear'}</small></div><div class="kpi-f"><span class="dl ${open ? 'bad' : 'good'}">${open ? 'ATTENTION' : 'HEALTHY'}</span><span class="kpi-s" style="font:11px var(--mono);color:var(--dim)">from simulation</span></div>`;
+            $('#kpi-faults').innerHTML = `<div class="kpi-l">Active faults · live</div><div class="kpi-v" style="color:${open ? '#FCA5A5' : '#6EE7B7'}">${open}<small>${open ? `on ${srvOpen} server${srvOpen > 1 ? 's' : ''}` : 'all clear'}</small></div><div class="kpi-f"><span class="dl ${open ? 'bad' : 'good'}">${open ? 'ATTENTION' : 'HEALTHY'}</span><span style="font:11px var(--mono);color:var(--dim)">from simulation</span></div>`;
+            const nSpike = spikeDays(d.dayTotals).filter(Boolean).length;
+            $('#kpi-jobs').innerHTML = `<div class="kpi-l">Jobs completed</div><div class="kpi-v">${tj}<small>jobs / 7 days</small></div><div class="kpi-f">${nSpike ? `<span class="dl bad">${nSpike} SPIKE DAY${nSpike > 1 ? 'S' : ''}</span>` : dpill(tj, pj, true)}${spark(d.dayTotals, '#3B82F6')}</div>`;
+            $('#kpi-success').innerHTML = `<div class="kpi-l">Robot success rate</div><div class="kpi-v">${succ.toFixed(1)}<small>%</small></div><div class="kpi-f">${dpill(succ, psucc, true, ' pts', true)}${spark(d.robotErrPct.map(v => 100 - v), '#10B981')}</div>`;
+        }
+
+        /* hardware reliability: which component types keep failing */
+        function hwRows(d, p) {
+            const vals = COMPONENTS.map(c => d.faultComps[c.key]), avg = mean(vals);
+            return COMPONENTS.map(c => {
+                const v = d.faultComps[c.key], pv = p ? p.faultComps[c.key] : null;
+                const rise = pv ? (v - pv) / pv : 0, ratio = avg ? v / avg : 0;
+                const status = (ratio >= 1.5 || (ratio >= 1.2 && rise >= .3)) ? 'review' : (ratio >= 1.2 || rise >= .25) ? 'watch' : 'ok';
+                return { c, v, pv, ratio, rise, status };
+            }).sort((a, b) => b.v - a.v);
+        }
+        function renderHardware(d, p) {
+            const rows = hwRows(d, p), max = Math.max(1, ...rows.map(r => r.v), ...rows.map(r => r.pv || 0));
+            const label = { review: 'Review supplier', watch: 'Watch', ok: 'Normal' };
+            $('#hw-sub').textContent = `failures · ${p ? 'tick = previous week' : 'this week'}`;
+            $('#ch-hw').innerHTML = `<div class="hw-head"><span>Component</span><span>Failures this week</span><span>#</span><span>vs prev.</span><span>Verdict</span></div>` + rows.map(r => {
+                const delta = r.pv == null ? null : r.v - r.pv;
+                return `<div class="hw-row" title="${esc(r.c.name)}: ${r.v} failures (${r.ratio.toFixed(1)}× component average)">
+                    <div class="hw-n"><b><i style="background:${CATS[r.c.cat].color}"></i>${esc(r.c.name)}</b><small>${CATS[r.c.cat].label} · ${r.c.brand}</small></div>
+                    <div class="hw-track"><div class="hw-fill" style="width:${(r.v / max * 100).toFixed(1)}%;background:${r.status === 'review' ? '#EF4444' : r.status === 'watch' ? '#F59E0B' : '#3B82F6'}"></div>${r.pv != null ? `<div class="hw-prev" style="left:calc(${(r.pv / max * 100).toFixed(1)}% - 1px)"></div>` : ''}</div>
+                    <div class="hw-v">${r.v}</div>
+                    <div class="hw-d ${delta == null || delta === 0 ? 'flat' : delta > 0 ? 'up' : 'down'}">${delta == null ? '—' : delta === 0 ? '±0' : (delta > 0 ? '▲ ' : '▼ ') + Math.abs(delta)}</div>
+                    <div class="hw-st ${r.status}">${label[r.status]}</div></div>`;
+            }).join('') + `<div class="hw-key"><span><i></i>previous week</span><span>Review supplier = ≥ 1.5× the component average, or above average and rising ≥ 30%.</span></div>`;
+        }
+
+        /* plain-language findings: what should someone look at first? */
+        function findings(d, p) {
+            const items = [];
+            const rows = hwRows(d, p), top = rows[0], avg = mean(rows.map(r => r.v));
+            if (top.status === 'review') {
+                items.push({ sev: 'bad', title: `${top.c.name} keeps failing`, text: `${top.v} failures this week, ${top.ratio.toFixed(1)}× the component average${top.pv != null ? ` (${top.v - top.pv >= 0 ? '+' : ''}${top.v - top.pv} vs last week)` : ''}. Check the quality of ${top.c.brand} or consider changing brand.` });
+            } else {
+                const rising = rows.filter(r => r.status === 'watch')[0];
+                items.push(rising
+                    ? { sev: 'warn', title: `${rising.c.name} is trending up`, text: `${rising.v} failures${rising.pv != null ? ` vs ${rising.pv} last week` : ''}. Not critical yet — keep an eye on it.` }
+                    : { sev: 'ok', title: 'No hardware type is failing unusually often', text: `Failures are spread evenly (about ${avg.toFixed(1)} per component type).` });
+            }
+            const sf = Object.entries(d.serverFaults).sort((a, b) => b[1] - a[1]), sAvg = mean(sf.map(x => x[1]));
+            if (sf[0] && sf[0][1] >= 5 && sf[0][1] >= 2 * sAvg) {
+                items.push({ sev: 'warn', title: `Server ${sf[0][0]} keeps faulting`, text: `${sf[0][1]} faults this week vs ${sAvg.toFixed(1)} on average. Inspect its slot (power, cooling, seating) before swapping parts again.` });
+            }
+            const spikes = spikeDays(d.dayTotals), si = spikes.indexOf(true);
+            if (si >= 0) {
+                const rest = d.dayTotals.filter((_, j) => j !== si);
+                items.push({ sev: 'warn', title: `Job spike on ${d.labels[si]}`, text: `${d.dayTotals[si]} jobs vs about ${Math.round(mean(rest))} on a normal day. A spike usually means a bad batch or one failing rack — check which servers repeated.` });
+            }
+            const cur = mean(d.robotErrPct), prv = p ? mean(p.robotErrPct) : null;
+            if (prv != null && cur - prv >= 1) items.push({ sev: 'bad', title: 'Robot errors are rising', text: `Error rate ${cur.toFixed(1)}% vs ${prv.toFixed(1)}% last week. Check ArUco lock, wheel encoders and link drops.` });
+            else items.push({ sev: 'ok', title: prv != null && cur < prv ? 'Robot errors are improving' : 'Robot error rate is steady', text: `${cur.toFixed(1)}% of jobs had an error${prv != null ? ` (last week ${prv.toFixed(1)}%)` : ''}. Target is ≤ 10%.` });
+            const order = { bad: 0, warn: 1, ok: 2 };
+            return items.sort((a, b) => order[a.sev] - order[b.sev]).slice(0, 4);
+        }
+        function renderAttention(d, p) {
+            const items = findings(d, p), act = items.filter(i => i.sev !== 'ok').length;
+            const pill = $('#attn-count'); pill.textContent = act ? `${act} to review` : 'all clear'; pill.className = 'pill ' + (act ? 'alert' : '');
+            $('#attn').innerHTML = items.map(i => `<div class="at ${i.sev}"><i></i><div><b>${esc(i.title)}</b><p>${esc(i.text)}</p></div></div>`).join('');
         }
 
         function smooth(pts) {
@@ -1624,10 +1753,11 @@
                 body += `<path d="${line} L${x(n - 1)},${y(0)} L${x(0)},${y(0)} Z" fill="url(#lg${si})"/><path d="${line}" fill="none" stroke="${s.color}" stroke-width="2.2" stroke-linecap="round"/>`;
                 pts.forEach(([px, py], i) => { body += `<circle cx="${px}" cy="${py}" r="${i === n - 1 ? 4.5 : 2.6}" fill="${i === n - 1 ? s.color : '#08101F'}" stroke="${s.color}" stroke-width="1.6"/>`; });
             });
+            if (yMax >= 10) g += `<line x1="${l}" x2="${W - r}" y1="${y(10)}" y2="${y(10)}" stroke="#38BDF8" stroke-opacity=".55" stroke-dasharray="5 5"/><text class="ax" x="${W - r - 2}" y="${y(10) - 5}" text-anchor="end" style="fill:#7DD3FC">robot target ≤ 10%</text>`;
             box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Weekly error rate chart"><defs>${defs}</defs>${g}<line class="guide" y1="${t}" y2="${t + ih}" stroke="#3B6BE0" stroke-dasharray="3 3" style="opacity:0"/>${body}</svg>`;
             attachHover(box, W, n, x, i => `<b>${labels[i]}</b>` + series.map(s => `<div><i style="background:${s.color}"></i>${s.name}: ${s.values[i].toFixed(1)}%</div>`).join(''));
         }
-        function barChart(box, labels, parts) {
+        function barChart(box, labels, parts, spikes) {
             const W = 520, H = 250, l = 34, r = 10, t = 22, b = 30, iw = W - l - r, ih = H - t - b, n = labels.length;
             const totals = labels.map((_, i) => parts.reduce((a, p) => a + p.values[i], 0));
             const yMax = Math.max(8, Math.ceil(Math.max(...totals) / 4) * 4), bw = iw / n * .56;
@@ -1642,55 +1772,24 @@
                     const y1 = y(acc + v), h = y(acc) - y1; acc += v;
                     bars += `<rect x="${(xc(i) - bw / 2).toFixed(1)}" y="${y1.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(h - 1.5, 1).toFixed(1)}" rx="${pi === parts.length - 1 ? 3 : 1}" fill="${p.color}"/>`;
                 });
-                bars += `<text class="ax" x="${xc(i)}" y="${y(totals[i]) - 6}" text-anchor="middle" style="fill:#C9D8FF;font-weight:700">${totals[i]}</text><text class="ax" x="${xc(i)}" y="${H - 9}" text-anchor="middle">${lb}</text>`;
+                const sp = spikes && spikes[i];
+                bars += `<text class="ax" x="${xc(i)}" y="${y(totals[i]) - 6}" text-anchor="middle" style="fill:${sp ? '#FBBF24' : '#C9D8FF'};font-weight:700">${sp ? '▲ ' : ''}${totals[i]}</text><text class="ax" x="${xc(i)}" y="${H - 9}" text-anchor="middle">${lb}</text>`;
+                if (sp) bars += `<rect x="${(xc(i) - bw / 2 - 3).toFixed(1)}" y="${(y(totals[i]) - 3).toFixed(1)}" width="${(bw + 6).toFixed(1)}" height="${(y(0) - y(totals[i]) + 6).toFixed(1)}" rx="5" fill="none" stroke="#FBBF24" stroke-width="1.4" stroke-dasharray="3 3"/>`;
             });
+            const av = mean(totals);
+            bars += `<line x1="${l}" x2="${W - r}" y1="${y(av).toFixed(1)}" y2="${y(av).toFixed(1)}" stroke="#94A3B8" stroke-dasharray="5 5" stroke-width="1"/><text class="ax" x="${W - r - 2}" y="${(y(av) - 5).toFixed(1)}" text-anchor="end">avg ${av.toFixed(1)}/day</text>`;
             box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Jobs completed per day, stacked by mode">${g}<line class="guide" y1="${t}" y2="${t + ih}" stroke="#3B6BE0" stroke-dasharray="3 3" style="opacity:0"/>${bars}</svg>`;
             attachHover(box, W, n, xc, i => `<b>${labels[i]} · ${totals[i]} jobs</b>` + parts.map(p => `<div><i style="background:${p.color}"></i>${p.name}: ${p.values[i]}</div>`).join(''));
         }
-        function donut(box, cats) {
-            const items = Object.keys(CATS).map(k => ({ k, ...CATS[k], v: cats[k] })), total = sum(items.map(i => i.v)) || 1, R = 54, C = 2 * Math.PI * R;
-            let acc = 0, segs = '';
-            items.forEach(i => { const len = i.v / total * C; segs += `<circle cx="80" cy="80" r="${R}" fill="none" stroke="${i.color}" stroke-width="22" stroke-dasharray="${Math.max(len - 2, 0).toFixed(1)} ${(C - Math.max(len - 2, 0)).toFixed(1)}" stroke-dashoffset="${(-acc).toFixed(1)}" transform="rotate(-90 80 80)"><title>${i.label}: ${i.v}</title></circle>`; acc += len; });
-            box.innerHTML = `<svg viewBox="0 0 160 160" role="img" aria-label="Faults by hardware category"><circle cx="80" cy="80" r="${R}" fill="none" stroke="#0B1735" stroke-width="22"/>${segs}
-                <text x="80" y="78" text-anchor="middle" fill="#fff" font-size="26" font-weight="700" font-family="Arial">${total}</text><text x="80" y="95" text-anchor="middle" fill="#5C6C92" font-size="10" font-family="monospace">FAULTS</text></svg>
-                <div class="donut-leg">${items.sort((a, b) => b.v - a.v).map(i => `<div><i style="background:${i.color}"></i>${i.label}<span>${i.v}</span><em>${Math.round(i.v / total * 100)}%</em></div>`).join('')}</div>`;
-        }
-        function heatColor(t) {
-            const stops = [[15, 27, 62], [29, 78, 216], [239, 68, 68]], p = t <= .5 ? [stops[0], stops[1], t * 2] : [stops[1], stops[2], (t - .5) * 2];
-            return `rgb(${p[0].map((c, i) => Math.round(c + (p[1][i] - c) * p[2])).join(',')})`;
-        }
-        function heatmap(box, sf) {
-            const max = Math.max(1, ...Object.values(sf)); let html = '';
-            const colOf = { 'A-L': 1, 'A-R': 2, 'B-L': 4, 'B-R': 5 };
-            for (let row = 1; row <= 4; row++) {
-                Object.keys(colOf).forEach(c => {
-                    const id = c + row, v = sf[id] || 0;
-                    html += `<div class="h" style="grid-column:${colOf[c]};grid-row:${row};background:${heatColor(v / max)}" title="Server ${id}: ${v} fault(s) this week">${id}<small>${v}</small></div>`;
-                });
-            }
-            box.innerHTML = html;
-            const top = Object.entries(sf).sort((a, b) => b[1] - a[1])[0];
-            $('#heat-max').textContent = String(max);
-            $('#heat-note').innerHTML = `Hotspot: <b>${top[0]}</b> with ${top[1]} fault${top[1] > 1 ? 's' : ''} — worth a manual inspection.`;
-        }
-        function fleet(box, d, p) {
-            const modeT = modeInfo().t;
-            const e1 = sum(d.robotErrs), j1 = sum(d.robotJobs);
-            box.innerHTML = `<table class="fleet"><thead><tr><th>Robot</th><th>Jobs</th><th>Err</th><th>Uptime</th></tr></thead><tbody>
-                <tr><td><span class="dot" style="background:${S.estop || S.stalled ? '#EF4444' : S.running ? '#3B82F6' : '#10B981'}"></span><b class="mono">CRN-01</b><div style="font-size:11px;color:var(--dim);margin-left:15px">live · ${modeT}</div></td><td class="mono">${j1}</td><td class="mono">${(e1 / j1 * 100).toFixed(1)}%</td><td class="mono">${d.uptime.toFixed(1)}%</td></tr>
-                <tr><td><span class="dot" style="background:#5C6C92"></span><b class="mono">CRN-02</b><div style="font-size:11px;color:var(--dim);margin-left:15px">standby · mock</div></td><td class="mono">${d.crn2.jobs}</td><td class="mono">${(d.crn2.err / d.crn2.jobs * 100).toFixed(1)}%</td><td class="mono">${d.crn2.up.toFixed(1)}%</td></tr></tbody></table>
-                <div class="fleet-sum"><div><b>${j1 + d.crn2.jobs}</b><span>jobs · fleet total</span></div><div><b>${((e1 + d.crn2.err) / (j1 + d.crn2.jobs) * 100).toFixed(1)}%</b><span>fleet error rate</span></div></div>`;
-        }
-
         let dashTimer = null;
         const renderDashboardSoon = () => { clearTimeout(dashTimer); dashTimer = setTimeout(renderDashboard, 200); };
         function renderDashboard() {
             const w = S.week, d = getWeek(w), p = w < 2 ? getWeek(w + 1) : null;
-            renderKpis(d, p);
+            renderKpis(d, p); renderHardware(d, p); renderAttention(d, p);
             lineChart($('#ch-err'), d.labels, [{ name: 'Servers with a fault', color: '#F87171', values: d.serverErr }, { name: 'Robot jobs with an error', color: '#38BDF8', values: d.robotErrPct }], Math.max(30, Math.ceil(Math.max(...d.serverErr, ...d.robotErrPct) / 10) * 10));
-            barChart($('#ch-jobs'), d.labels, [{ name: 'Auto-fix', color: '#3B82F6', values: d.jobs.auto }, { name: 'Human assist', color: '#F59E0B', values: d.jobs.human }, { name: 'Manual', color: '#22D3EE', values: d.jobs.manual }]);
+            const sp = spikeDays(d.dayTotals);
+            barChart($('#ch-jobs'), d.labels, [{ name: 'Auto-fix', color: '#3B82F6', values: d.jobs.auto }, { name: 'Human assist', color: '#F59E0B', values: d.jobs.human }, { name: 'Manual', color: '#22D3EE', values: d.jobs.manual }], sp);
             const tj = totalJobs(d); $('#jobs-badge').textContent = `${tj} total · ${(tj / 7).toFixed(1)}/day`;
-            donut($('#ch-cat'), d.faultCats); heatmap($('#ch-heat'), d.serverFaults); fleet($('#ch-fleet'), d, p);
         }
 
         /* ============================================================
@@ -1725,13 +1824,26 @@
         $('#btn-clear-log').addEventListener('click', () => { LOG = []; store.set(LOG_KEY, LOG); log('Log cleared.', 'system'); });
         $$('#week-seg button').forEach(b => b.addEventListener('click', () => { S.week = +b.dataset.w; $$('#week-seg button').forEach(x => x.classList.toggle('on', x === b)); renderDashboard(); }));
 
+        // collapsible sidebar (focus mode) + server log disclosure
+        function setRail(collapsed) {
+            $('#app').classList.toggle('collapsed', collapsed);
+            const t = $('#rail-toggle');
+            t.setAttribute('aria-expanded', String(!collapsed));
+            t.title = collapsed ? 'Show sidebar' : 'Hide sidebar — more room for the map and camera';
+            $('span', t).textContent = collapsed ? 'Show sidebar' : 'Hide sidebar';
+            store.set('corvin.rail', collapsed ? 'collapsed' : 'open');
+        }
+        $('#rail-toggle').addEventListener('click', () => setRail(!$('#app').classList.contains('collapsed')));
+        $('#log-toggle').addEventListener('click', () => setLogOpen(!logOpen));
+
         // recharge while parked at the dock
         setInterval(() => { if (S.robot.x === DOCK.x && S.robot.y === DOCK.y && S.robot.battery < 100) { S.robot.battery = Math.min(100, S.robot.battery + 1.2); updatePos(); } }, 1000);
 
         /* ============================================================
            Init
         ============================================================ */
-        buildMap(); fitMap(); renderAllServers(); renderSimLog(); renderOrders(); camIdle(); updateHud(); padStatus();
+        setRail(store.get('corvin.rail', 'open') === 'collapsed');
+        buildMap(); fitMap(); renderAllServers(); setLogOpen(logOpen); renderOrders(); camIdle(); updateHud(); padStatus();
         log('System initialized. Library layout loaded — 2 stacks, 16 servers, 1 robot dock. Dijkstra pathfinding engine ready.', 'system');
         showTab(location.hash === '#dashboard' ? 'dash' : 'sim', false);
     })();
