@@ -510,6 +510,10 @@
                 <svg class="ic"><use href="#i-chart" /></svg>
                 <span><b>Dashboard</b><small>Weekly · jobs · fault trends</small></span>
             </button>
+            <a class="tab v3-link" href="v3/" style="text-decoration:none;margin-top:6px;border:1px dashed var(--line)" title="Open v3: stationary robot swapping parts in one 3D rack">
+                <svg class="ic"><use href="#i-robot" /></svg>
+                <span><b>v3 · Stationary rack</b><small>3D swap robot (mini)</small></span>
+            </a>
 
             <button class="rail-toggle" id="rail-toggle" aria-expanded="true" aria-controls="app" title="Hide sidebar — more room for the map and camera">
                 <svg class="ic"><use href="#i-left" /></svg><span>Hide sidebar</span>
@@ -1797,16 +1801,16 @@
         ============================================================ */
         function showTab(name, push = true) {
             S.tab = name;
-            $$('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
+            $$('.tab:not(.v3-link)').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
             $('#view-sim').hidden = name !== 'sim'; $('#view-dash').hidden = name !== 'dash';
             if (name === 'dash') { held.length = 0; renderDashboard(); } else fitMap();
             if (push) { try { history.replaceState(null, '', name === 'dash' ? '#dashboard' : '#simulation'); } catch (e) { /* file:// */ } }
         }
-        $$('.tab').forEach(t => {
+        $$('.tab:not(.v3-link)').forEach(t => {
             t.addEventListener('click', () => showTab(t.dataset.tab));
             t.addEventListener('keydown', e => {
                 if (!['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
-                e.preventDefault(); const tabs = $$('.tab'), i = tabs.indexOf(t), n = tabs[(i + (e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+                e.preventDefault(); const tabs = $$('.tab:not(.v3-link)'), i = tabs.indexOf(t), n = tabs[(i + (e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
                 n.focus(); showTab(n.dataset.tab);
             });
         });
