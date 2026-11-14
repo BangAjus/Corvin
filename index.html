@@ -585,13 +585,12 @@
                         <div class="bar">
                             <div>
                                 <h1 style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">Swap Simulation <span id="mode-pill"></span></h1>
-                                <div class="sub">1 rack · 8 servers × 7 hot-swap bays · X/Z/Y gantry · ArUco = position, barcode = identity</div>
+                                <div class="sub">1 rack · 5 servers × 7 hot-swap bays · X/Z/Y gantry · ArUco = position, barcode = identity</div>
                             </div>
                             <div class="tools">
                                 <div class="seg" id="sc-seg" role="group" aria-label="Scenario">
                                     <button data-sc="A" title="No faults. Arm parks above the parts caddy.">Idle<small>Healthy rack</small></button>
                                     <button data-sc="B" title="Servers report which component failed. Robot swaps each one.">Auto-Swap<small>Reported faults</small></button>
-                                    <button data-sc="C" title="BMC flags a server but not the part. Robot inspects every bay with the camera, then swaps.">Inspect<small>Hidden faults</small></button>
                                 </div>
                                 <div class="seg" id="speed-seg" role="group" aria-label="Simulation speed">
                                     <button data-sp="1" class="on" title="Real-time-ish">1×</button>
@@ -604,13 +603,13 @@
                                 <label class="switch" title="Presenter view hides the server log, gripper camera, telemetry and manual controls. Turn it off for technical questions.">
                                     <input type="checkbox" id="chk-presenter"><span class="tr"></span> Presenter view
                                 </label>
-                                <button class="btn pri" id="btn-pitch" title="One-click demo: faults appear, the robot swaps them, then the AI dashboard opens">▶ Pitch demo</button>
+                                <button class="btn pri" id="btn-pitch" title="One-click demo: faults appear, the robot swaps them, then the AI dashboard opens">▶ Start demo</button>
                             </div>
                         </div>
 
                         <div class="card map-card">
                             <div class="banner" id="banner"></div>
-                            <div class="scene" id="scene" role="img" aria-label="3D view: one server rack with 8 servers, a gantry robot in front of it on a short rail, and a parts caddy with spares and an RMA bin on the right">
+                            <div class="scene" id="scene" role="img" aria-label="3D view: one server rack with 5 servers, a gantry robot in front of it on a short rail, and a parts caddy with spares and an RMA bin on the right">
                                 <div class="scene-tools">
                                     <button class="btn sm on" data-view="overview">Overview</button>
                                     <button class="btn sm" data-view="front">Front</button>
@@ -626,7 +625,6 @@
                                 <span class="it"><span class="sw" style="background:#22C55E;border-color:#16A34A"></span>Part OK</span>
                                 <span class="it"><span class="sw" style="background:#EF4444;border-color:#B91C1C"></span>Component fault</span>
                                 <span class="it"><span class="sw" style="background:#F59E0B;border-color:#B45309"></span>Being swapped</span>
-                                <span class="it"><span class="sw" style="background:#3A2A07;border-style:dashed;border-color:#B7791F"></span>Suspect server (part unknown)</span>
                                 <span class="it"><span class="sw" style="background:#38BDF8;border-color:#0EA5E9"></span>Scanning</span>
                             </div>
                         </div>
@@ -800,7 +798,7 @@
     const DAY = 86400000;
 
     /* ============================================================
-       World: one rack, 8 servers, 7 hot-swap bays per server.
+       World: one rack, 5 servers, 7 hot-swap bays per server.
        Units are metres. The rack front is at z = 0.5 and faces +z.
        The robot is a gantry on a short floor rail in front of it:
        X = carriage along the rail, Z = lift on the mast, Y = reach.
@@ -825,9 +823,10 @@
     const comp = key => COMPONENTS.find(c => c.key === key);
     const cname = key => comp(key).name;
 
-    const NS = 8, NB = COMPONENTS.length;
+    const NS = 5, NB = COMPONENTS.length;
     const bayX = c => -0.35 + c * 0.13;
-    const rowY = r => 1.80 - r * 0.2;
+    const ROW0 = 1.62, PITCH = 0.28;           // 5 servers, 2U-style spacing
+    const rowY = r => ROW0 - r * PITCH;
     const LABEL_X = -0.49;
     const PART = { w: 0.112, h: 0.13, d: 0.12, z: 0.44 };
     const CADDY = { x: 0.82, spareY: 1.15, rmaY: 0.72 };
@@ -840,7 +839,7 @@
     const servers = Array.from({ length: NS }, (_, r) => {
         const id = `S${r + 1}`;
         return {
-            id, row: r, u: `U${40 - r * 5}`, aruco: 11 + r,
+            id, row: r, u: `U${36 - r * 8}`, aruco: 11 + r,
             serial: `SN-R01${id}-${1000 + ((r + 3) * 7919) % 9000}`,
             suspect: false, inspected: false,
             bays: COMPONENTS.map((c, col) => ({ comp: c.key, col, health: 100, fault: null, part: null })),
@@ -1006,12 +1005,14 @@
     function buildFrontTextures() {
         COMPONENTS.forEach(c => {
             frontTex[c.key] = canvasTex(128, 148, (g, W, H) => {
-                g.fillStyle = '#132552'; g.fillRect(0, 0, W, H);
-                g.fillStyle = CATS[c.cat].color; g.fillRect(0, 0, W, 16);
-                g.strokeStyle = 'rgba(160,185,240,.35)'; g.lineWidth = 3;
-                for (let i = 0; i < 6; i++) { g.beginPath(); g.moveTo(16, 70 + i * 10); g.lineTo(W - 16, 70 + i * 10); g.stroke(); }
-                g.fillStyle = '#E8EEFC'; g.font = '700 34px ui-monospace, Menlo, monospace'; g.textAlign = 'center'; g.fillText(c.abbr, W / 2, 54);
-                g.fillStyle = 'rgba(255,255,255,.08)'; g.fillRect(10, H - 26, W - 20, 14);
+                // brushed dark faceplate, perforated vents, small part label and a thin colour tab
+                g.fillStyle = '#1A2133'; g.fillRect(0, 0, W, H);
+                g.fillStyle = '#232C42'; g.fillRect(4, 4, W - 8, H - 8);
+                g.fillStyle = 'rgba(0,0,0,.55)';
+                for (let y = 40; y < 110; y += 9) for (let x = 14 + (y / 9 % 2) * 4; x < W - 14; x += 9) { g.beginPath(); g.arc(x, y, 2.4, 0, Math.PI * 2); g.fill(); }
+                g.fillStyle = CATS[c.cat].color; g.fillRect(10, 12, 5, 18);
+                g.fillStyle = '#AEB9D4'; g.font = '700 16px ui-monospace, Menlo, monospace'; g.textAlign = 'left'; g.fillText(c.abbr, 22, 27);
+                g.fillStyle = '#3A4560'; g.fillRect(W / 2 - 26, H - 30, 52, 9);
             });
         });
     }
@@ -1120,7 +1121,7 @@
         const hdr = labelPlane('RACK R-01', .5, .07, { color: '#7C9BE0' }); hdr.position.set(0, 2.06, .505); scene.add(hdr);
         servers.forEach(s => {
             const y = rowY(s.row);
-            box(1.1, .17, .95, darkMetal, 0, y, 0);
+            box(1.1, .24, .95, darkMetal, 0, y, 0);
             const plate = new THREE.Mesh(new THREE.PlaneGeometry(.085, .133), new THREE.MeshStandardMaterial({ map: labelPlateTex(s), emissive: 0xffffff, emissiveMap: null, emissiveIntensity: 0, roughness: .8 }));
             plate.material.emissiveMap = plate.material.map; plate.material.emissiveIntensity = .35;
             plate.position.set(LABEL_X, y, .4765); scene.add(plate);
@@ -1128,7 +1129,7 @@
                 const hole = box(.118, .14, .02, holeMat, bayX(b.col), y, .468); hole.castShadow = false;
                 const p = makePart(b.comp); placeInBay(s, b, p); setLook(p, 'ok'); pickables.push(p.children[0]);
             });
-            const edges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.12, .18, .02)), new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: .9 }));
+            const edges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.12, .25, .02)), new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: .9 }));
             edges.position.set(0, y, .5); edges.visible = false; scene.add(edges); s.edges = edges;
         });
     }
@@ -1640,7 +1641,7 @@
         if (Math.abs(a.x - HOME.x) < .01 && Math.abs(a.y - HOME.y) < .01) return { label: 'Home (park)' };
         if (Math.abs(a.x - CADDY.x) < .01 && Math.abs(a.y - CADDY.spareY) < .01) return { label: 'Caddy · spares' };
         if (Math.abs(a.x - CADDY.x) < .01 && Math.abs(a.y - CADDY.rmaY) < .01) return { label: 'Caddy · RMA bin' };
-        const row = Math.round((1.80 - a.y) / .2), s = servers[row];
+        const row = Math.round((ROW0 - a.y) / PITCH), s = servers[row];
         if (!s || Math.abs(rowY(row) - a.y) > .012) return { label: 'moving…' };
         if (Math.abs(a.x - LABEL_X) < .012) return { label: `${s.id} · label plate`, s, label_: true };
         const col = Math.round((a.x + .35) / .13), b = s.bays[col];
@@ -1744,7 +1745,7 @@
                 let t = start + dayI * DAY + hour * 3600000 + ri(0, 59) * 60000;
                 if (t > now - 20 * 60000) t -= ri(1, 5) * DAY;   // not in the future: same hour on an earlier day
                 const server = (w === 0 && rng() < .22) ? 'S5' : `S${ri(1, NS)}`;
-                const inspect = rng() < .25, mins = inspect ? 14 + rng() * 38 : 3.5 + rng() * 11;
+                const inspect = false, mins = 3.5 + rng() * 11;
                 recs.push({ id: `m${w}-${c.key}-${i}`, t, comp: c.key, server, mode: inspect ? 'inspect' : 'auto', fails: rng() < .07 ? 1 : 0, dur: mins * 60000, restored: t + mins * 60000 });
             }
         });
@@ -1863,7 +1864,7 @@
 
         const mStr = d.mttr ? fmtDur(d.mttr).replace(' min', '<small>min</small>').replace(/s$/, '<small>s</small>') : '—';
         $('#kpi-mttr').innerHTML = `<div class="kpi-l">Avg time broken</div><div class="kpi-v">${mStr}</div><div class="kpi-f">${p && p.mttr && d.mttr ? dpill(d.mttr, p.mttr, false) : '<span class="dl flat">—</span>'}<span class="kpi-s">fail → restored</span></div>` +
-            aiBox(A.insN ? `Inspect jobs take <b>${fmtDur(A.mi)}</b> vs ${fmtDur(A.ma)} when the BMC names the part. Component-level fault codes would bring this to about <b>${fmtDur(A.ifAuto)}</b>.` : 'Every job had the part named by the BMC: this is close to the floor.', A.insN ? 'Enable BMC part codes' : '');
+            aiBox(d.mttr ? `About <b>${Math.round(ASSUME.manualMttrH * 3600000 / d.mttr)}× faster</b> than a manual team (~${ASSUME.manualMttrH} h from ticket to restored). Most of the remaining time is waiting for the alert, not the swap itself.` : 'No swaps this week yet.', '');
 
         const tot = sum(Object.values(spares)), low = COMPONENTS.filter(c => spares[c.key] <= 1);
         const order = A.diags.slice(0, 2).map(g => `${g.c.abbr} ×${g.reorder}`).join(', ');
@@ -1976,7 +1977,7 @@
         recs.push({ tone: A.topV.tone, tag: 'Parts & suppliers', title: A.topV.head, text: A.topV.text, impact: A.top.excess >= 1 ? `≈ −${Math.round(A.top.excess)} failures/wk` : 'keeps AFR on target', conf: confOf(A.top.n) });
         const second = A.diags.slice(1).map(g => ({ g, v: partVerdict(g) })).find(x => x.v.tone !== 'ok');
         if (second) recs.push({ tone: second.v.tone, tag: 'Parts & suppliers', title: second.v.head, text: second.v.text, impact: `≈ −${Math.max(1, Math.round(second.g.excess))} failures/wk`, conf: confOf(second.g.n) });
-        if (A.insN) recs.push({ tone: 'info', tag: 'Time broken', title: 'Ask servers to name the failed part', text: `${A.insN} jobs needed a bay-by-bay inspection (${fmtDur(A.mi)} each vs ${fmtDur(A.ma)}). Turning on component-level BMC fault codes lets Corvin go straight to the bay.`, impact: `avg ${fmtDur(d.mttr)} → ${fmtDur(A.ifAuto)}`, conf: confOf(A.insN) });
+        recs.push({ tone: 'info', tag: 'Spare parts', title: `Order ${A.diags.slice(0, 2).map(g => `${g.reorder} ${g.c.abbr}`).join(' + ')} this week`, text: `At this week's failure rate, that covers the ${ASSUME.leadWeeks}-week delivery time plus ${ASSUME.safetyWeeks} week of buffer, so no caddy runs empty while parts are on order.`, impact: 'no swaps blocked by missing spares', conf: confOf(A.top.n) });
         recs.push(A.worn.length
             ? { tone: 'warn', tag: 'Predictive', title: `Swap ${A.worn.length} worn part${A.worn.length > 1 ? 's' : ''} before ${A.worn.length > 1 ? 'they fail' : 'it fails'}`, text: `Rack R-01 has ${A.worn.length} part${A.worn.length > 1 ? 's' : ''} under 40% health. Batch ${A.worn.length > 1 ? 'them' : 'it'} into the ${BINS[A.quiet]} window (${d.load[A.quiet]} kW, lowest load).`, impact: `${A.worn.length} unplanned outage${A.worn.length > 1 ? 's' : ''} avoided`, conf: 'medium' }
             : { tone: 'ok', tag: 'Labour', title: `${A.techH.toFixed(0)} technician-hours freed this week`, text: `Corvin did ${d.swaps} swaps. Technicians can spend that time on design and capacity work instead of repetitive part swaps.`, impact: `${A.night} night call-outs avoided`, conf: 'high' });
@@ -2084,7 +2085,7 @@
         S.failArmed = false; $('#chk-fail').checked = false;
         S.speed = 2; $$('#speed-seg button').forEach(x => x.classList.toggle('on', x.dataset.sp === '2'));
         S.pitch = true; setView('follow');
-        aiSay('Pitch demo: servers in rack R-01 just reported failed parts. Watch Corvin find each slot (ArUco), confirm the server (barcode) and hot-swap the part. No technician needed.', '');
+        aiSay('Demo: servers in rack R-01 just reported failed parts. Watch Corvin find each slot (ArUco), confirm the server (barcode) and hot-swap the part. No technician needed.', '');
         startScenario('B');
     });
     $$('#week-seg button').forEach(b => b.addEventListener('click', () => { S.week = +b.dataset.w; $$('#week-seg button').forEach(x => x.classList.toggle('on', x === b)); renderDashboard(); }));
@@ -2167,7 +2168,7 @@
     initScene();
     refreshSpareLabel(); renderAllServers(); setLogOpen(logOpen); renderOrders(); updateHud(); padStatus();
     $$('#sc-seg button').forEach(b => b.classList.toggle('on', b.dataset.sc === 'A'));
-    log('System initialized (v3 · stationary). Rack R-01 loaded — 8 servers × 7 hot-swap bays, gantry homed above the parts caddy.', 'system');
+    log('System initialized (v3 · stationary). Rack R-01 loaded — 5 servers × 7 hot-swap bays, gantry homed above the parts caddy.', 'system');
     showTab(location.hash === '#dashboard' ? 'dash' : 'sim', false);
     requestAnimationFrame(frame);
     window.__corvin = { S, servers, spares, live, startScenario, engageEstop, resetEstop, setManual, manualMove, manualScan, manualSwap, resumeAuto };

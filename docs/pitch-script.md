@@ -6,7 +6,7 @@ Open `v3/` with **Presenter view** on (the default). Set the browser to full scr
 
 > "Every year a new GPU generation comes out, and each one needs more power. More power means more heat, and more heat means more parts failing: PSUs and fans first. Today a technician walks to the rack, opens a ticket, swaps the part and checks it. That takes about 38 minutes of hands-on time and 2½ hours from alarm to a working server. That work is repetitive and high-volume, the kind the chairman said AI should take over."
 
-## 2 · Live demo (60 s): press **▶ Pitch demo**
+## 2 · Live demo (60 s): press **▶ Start demo**
 
 The view follows the gripper while you talk:
 
