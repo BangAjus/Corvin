@@ -18,13 +18,12 @@ The dashboard opens by itself when the rack is healthy again.
 
 ## 3 · Dashboard (60 s): the value is in the decisions
 
-- **Weekly briefing, card 1:** "A part that keeps failing doesn't automatically mean a bad brand. Corvin separates three causes:
-  - one bad **slot**: the failures repeat in the same position;
-  - **load and heat**: the failures follow rack power draw (here r = 0.8);
-  - **supplier quality**: the failure rate is above the benchmark everywhere.
+- **Weekly briefing, card 1:** "The top failing part isn't just a restock signal, it's a buying decision. Corvin checks two things:
+  - **load and heat**: do the failures follow rack power draw (here r = 0.8)? If yes, the part runs too close to its rating, so buy a *higher-rated series*.
+  - **supplier quality**: is the failure rate far above the benchmark (here 3.7×)? If yes, the brand is the problem, so *change the brand*.
 
-  For PSUs it's both load and supplier. So the action is to *upgrade the series, and A/B-test a second supplier before switching*."
-- **Rack position:** "One position fails about 2× the average, for every part type. That's an airflow problem, not a parts problem."
+  For PSUs it's both. So the action is to *upgrade the series, and A/B-test a second supplier on 2 racks before switching*."
+- **Recent breakdowns:** "One part type, PSUs from Supplier D, causes about a quarter of all downtime. That's where a better part pays back fastest."
 - **Small cards:** the technician-hours saved, the spare-parts order with lead time, and the effect of BMC fault codes on time broken.
 - **Condition grid:** "Worn parts are swapped *before* they fail, in the lowest-load window."
 

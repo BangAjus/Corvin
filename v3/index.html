@@ -1782,19 +1782,17 @@
         const afr = afrOf(n), bench = BENCH_AFR[key], x = afr / bench;
         const top = bySrv[0] || ['—', 0], topShare = n ? top[1] / n : 0;
         const causes = [];
-        if (n >= 4 && topShare >= .35) causes.push('slot');
         if (n >= 5 && r >= .6) causes.push('load');
-        if (x >= 2 && !causes.includes('slot')) causes.push('brand');
+        if (x >= 2) causes.push('brand');
         const expected = bench / 100 * FLEET.servers / 52;          // failures/week at benchmark AFR
         return { key, c: comp(key), n, byBin, r, peak, afr, bench, x, top: top[0], topN: top[1], topShare, causes, excess: Math.max(0, n - expected), reorder: Math.ceil(n * (ASSUME.leadWeeks + ASSUME.safetyWeeks)) };
     }
     function partVerdict(g) {
         const c = g.c, ev = `${g.n} failures · AFR ${g.afr.toFixed(1)}% vs ${g.bench}% benchmark (${g.x.toFixed(1)}×)`;
-        if (g.causes.includes('slot')) return { tone: 'warn', head: `${c.abbr}: fix position ${g.top} first, not the brand`, text: `<b>${g.topN} of ${g.n}</b> ${c.name} failures are in position ${g.top}. A part that keeps dying in one place points at the slot (backplane, airflow, seating). Changing brand would not fix it.`, act: `Inspect ${g.top} slots`, ev };
         if (g.causes.includes('load') && g.causes.includes('brand')) return { tone: 'bad', head: `${c.abbr}: change the series and trial a new supplier`, text: `${c.name} fails at <b>${g.x.toFixed(1)}×</b> the benchmark rate, and the failures follow rack load (<b>r = ${g.r.toFixed(2)}</b>, ${Math.round(g.peak * 100)}% between 12–20 h). Parts are running too close to their rating. Move to a higher-rated ${c.abbr} series and trial another supplier on 2 racks. Switch brand only if the trial AFR drops below ${g.bench}%.`, act: `Upgrade series · A/B supplier`, ev };
         if (g.causes.includes('load')) return { tone: 'warn', head: `${c.abbr}: load-driven, upgrade the rating`, text: `${c.name} failures follow rack load (<b>r = ${g.r.toFixed(2)}</b>). The brand is near benchmark (${g.x.toFixed(1)}×), so a higher-rated series and better cooling will help more than a new supplier.`, act: 'Higher-rated series', ev };
-        if (g.causes.includes('brand')) return { tone: 'bad', head: `${c.abbr}: supplier quality issue`, text: `${c.name} from ${c.brand} fails at <b>${g.x.toFixed(1)}×</b> the benchmark, spread across positions and hours. It is not one slot or the heat: it is the part. Open a quality claim and qualify a second brand.`, act: `Review ${c.brand}`, ev };
-        if (g.x >= 1.3) return { tone: 'warn', head: `${c.abbr}: above benchmark, keep watching`, text: `${c.name} is at ${g.x.toFixed(1)}× the benchmark with no clear cause yet (not one slot, not load-linked). Keep watching for one more week.`, act: 'Watch', ev };
+        if (g.causes.includes('brand')) return { tone: 'bad', head: `${c.abbr}: supplier quality issue`, text: `${c.name} from ${c.brand} fails at <b>${g.x.toFixed(1)}×</b> the benchmark, and the failures do not follow rack load, so heat is not the cause: it is the part itself. Open a quality claim and switch to a second brand.`, act: `Review ${c.brand}`, ev };
+        if (g.x >= 1.3) return { tone: 'warn', head: `${c.abbr}: above benchmark, keep watching`, text: `${c.name} is at ${g.x.toFixed(1)}× the benchmark with no clear cause yet (not load-linked, not far enough above benchmark to blame the brand). Keep watching for one more week.`, act: 'Watch', ev };
         return { tone: 'ok', head: `${c.abbr}: normal`, text: `${c.name} is within the benchmark. No action.`, act: 'None', ev };
     }
     function analyse(d, p) {
@@ -1802,7 +1800,7 @@
         const top = diags[0], topV = partVerdict(top);
         // positions (servers) across the fleet
         const bySrv = Object.entries(countBy(d.recs, r => r.server)).sort((a, b) => b[1] - a[1]);
-        const posAvg = d.recs.length / NS, hot = bySrv[0], hotX = hot ? hot[1] / posAvg : 0;
+        const posAvg = d.recs.length / NS;
         // inspect vs auto
         const auto = d.done.filter(r => r.mode === 'auto'), insp = d.done.filter(r => r.mode === 'inspect');
         const ma = mean(auto.map(r => r.dur)), mi = mean(insp.map(r => r.dur));
@@ -1819,7 +1817,7 @@
         // failed attempts
         const failRecs = d.recs.filter(r => r.fails), failN = sum(failRecs.map(r => r.fails));
         const failSrv = Object.entries(countBy(failRecs, r => r.server)).sort((a, b) => b[1] - a[1])[0];
-        return { diags, top, topV, bySrv, hot, hotX, posAvg, ma, mi, ifAuto, insN: insp.length, techH, downH, night, robotMin, worn, quiet, failN, failSrv };
+        return { diags, top, topV, bySrv, posAvg, ma, mi, ifAuto, insN: insp.length, techH, downH, night, robotMin, worn, quiet, failN, failSrv };
     }
 
     /* ---------- rendering ---------- */
@@ -1968,14 +1966,16 @@
                 <small>broke ${when.toLocaleDateString('en-US', { weekday: 'short' })} ${pad2(when.getHours())}:${pad2(when.getMinutes())} · ${still ? 'waiting for swap' : (r.mode || 'auto') + (r.fails ? ` · ${r.fails} retry` : '')}</small></div>`;
         }).join('') : '<div class="empty">No breakdowns this week.</div>';
         const longest = d.done.slice().sort((a, b) => b.dur - a.dur)[0];
-        $('#ai-brk').innerHTML = aiBox(`Position <b>${A.hot[0]}</b> broke <b>${A.hot[1]}</b> times, ${A.hotX.toFixed(1)}× the average position${A.hotX >= 1.6 ? ': a hot spot, so check airflow and blanking panels at that height' : ''}. ${longest ? `Longest outage: ${cname(longest.comp)} on ${longest.server}, ${fmtDur(longest.dur)} (${longest.mode}). ` : ''}Compared with a manual team (~${ASSUME.manualMttrH} h from ticket to restored), the robot avoided about <b>${A.downH.toFixed(0)} server-hours</b> of downtime.`, A.hotX >= 1.6 ? `Survey ${A.hot[0]} airflow` : '', A.hotX >= 1.6 ? 'warn' : '');
+        // which part (and so which supplier) costs the most broken time
+        const down = COMPONENTS.map(c => ({ c, ms: sum(d.done.filter(r => r.comp === c.key).map(r => r.dur)) })).sort((a, b) => b.ms - a.ms);
+        const totMs = sum(down.map(x => x.ms)), worst = down[0], share = totMs ? Math.round(worst.ms / totMs * 100) : 0;
+        $('#ai-brk').innerHTML = aiBox(`<b>${worst.c.name}</b> (${worst.c.brand}) caused <b>${share}%</b> of all broken time this week (${fmtDur(worst.ms)}). Fewer failures of this one part is the fastest way to cut downtime. ${longest ? `Longest outage: ${cname(longest.comp)} on ${longest.server}, ${fmtDur(longest.dur)} (${longest.mode}). ` : ''}Compared with a manual team (~${ASSUME.manualMttrH} h from ticket to restored), the robot avoided about <b>${A.downH.toFixed(0)} server-hours</b> of downtime.`, share >= 25 ? `Review ${worst.c.brand} ${worst.c.abbr}` : '', share >= 25 ? 'warn' : '');
     }
     function renderBrief(d, A, animate) {
         const recs = [];
         recs.push({ tone: A.topV.tone, tag: 'Parts & suppliers', title: A.topV.head, text: A.topV.text, impact: A.top.excess >= 1 ? `≈ −${Math.round(A.top.excess)} failures/wk` : 'keeps AFR on target', conf: confOf(A.top.n) });
         const second = A.diags.slice(1).map(g => ({ g, v: partVerdict(g) })).find(x => x.v.tone !== 'ok');
-        if (A.hotX >= 1.6) recs.push({ tone: 'warn', tag: 'Rack position', title: `Position ${A.hot[0]} is a hot spot`, text: `${A.hot[1]} breakdowns vs ${A.posAvg.toFixed(1)} on an average position (${A.hotX.toFixed(1)}×), across all part types. Something at that height (airflow, blanking panels, power rail) is hurting every part in it.`, impact: `≈ −${Math.max(1, Math.round(A.hot[1] - A.posAvg))} failures/wk`, conf: confOf(A.hot[1]) });
-        else if (second) recs.push({ tone: second.v.tone, tag: 'Parts & suppliers', title: second.v.head, text: second.v.text, impact: `≈ −${Math.max(1, Math.round(second.g.excess))} failures/wk`, conf: confOf(second.g.n) });
+        if (second) recs.push({ tone: second.v.tone, tag: 'Parts & suppliers', title: second.v.head, text: second.v.text, impact: `≈ −${Math.max(1, Math.round(second.g.excess))} failures/wk`, conf: confOf(second.g.n) });
         if (A.insN) recs.push({ tone: 'info', tag: 'Time broken', title: 'Ask servers to name the failed part', text: `${A.insN} jobs needed a bay-by-bay inspection (${fmtDur(A.mi)} each vs ${fmtDur(A.ma)}). Turning on component-level BMC fault codes lets Corvin go straight to the bay.`, impact: `avg ${fmtDur(d.mttr)} → ${fmtDur(A.ifAuto)}`, conf: confOf(A.insN) });
         recs.push(A.worn.length
             ? { tone: 'warn', tag: 'Predictive', title: `Swap ${A.worn.length} worn part${A.worn.length > 1 ? 's' : ''} before ${A.worn.length > 1 ? 'they fail' : 'it fails'}`, text: `Rack R-01 has ${A.worn.length} part${A.worn.length > 1 ? 's' : ''} under 40% health. Batch ${A.worn.length > 1 ? 'them' : 'it'} into the ${BINS[A.quiet]} window (${d.load[A.quiet]} kW, lowest load).`, impact: `${A.worn.length} unplanned outage${A.worn.length > 1 ? 's' : ''} avoided`, conf: 'medium' }
