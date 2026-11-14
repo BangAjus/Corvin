@@ -466,6 +466,70 @@
             .map-card { height: 440px; }
             .scene-axes { display: none; }
         }
+
+        /* ------------------------------------------------------------ */
+        /* Corvin AI: insights, briefing, live feed, presenter view      */
+        /* ------------------------------------------------------------ */
+        .dash > .card:not(.kpi) { display: flex; flex-direction: column; }
+        .dash > .card:not(.kpi) > .card-b { flex: 1; }
+        .ai { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; padding: 11px 14px 13px; border-top: 1px solid #1F1B4A; background: linear-gradient(180deg, rgba(124, 58, 237, .08), rgba(56, 189, 248, .03)); border-radius: 0 0 14px 14px; font-size: 12px; }
+        .kpi .ai { margin: auto -16px -16px; padding-top: 10px; }
+        .kpi.small .ai { font-size: 11.5px; }
+        .ai .spk, .spk-i { width: 20px; height: 20px; border-radius: 6px; background: linear-gradient(135deg, #7C3AED, #38BDF8); display: inline-grid; place-items: center; color: #fff; font-size: 11px; box-shadow: 0 0 12px rgba(124, 58, 237, .4); }
+        .spk-i { width: 16px; height: 16px; font-size: 9px; vertical-align: -3px; margin-right: 4px; }
+        .ai .t { display: block; font: 700 9.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: #C4B5FD; margin-bottom: 3px; }
+        .ai p { color: #B9C6E6; line-height: 1.5; }
+        .ai p b { color: #fff; }
+        .ai .ev { display: inline-block; margin-top: 4px; font: 10.5px var(--mono); color: #7F8FB8; }
+        .ai .act { display: inline-block; margin-top: 7px; font: 700 10px var(--mono); padding: 3px 8px; border-radius: 6px; background: #1E1240; border: 1px solid #5B21B6; color: #DDD6FE; }
+        .ai.bad .act { background: #2B0A10; border-color: #991B1B; color: #FCA5A5; }
+        .ai.warn .act { background: #2A1D05; border-color: #8A5A0A; color: #FCD34D; }
+
+        .brief { border-color: #3B2A7A; background: linear-gradient(160deg, #120C2E, #08101F 55%); overflow: hidden; }
+        .brief-h { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid #1F1B4A; flex-wrap: wrap; }
+        .brief-h .orb { width: 32px; height: 32px; border-radius: 10px; background: linear-gradient(135deg, #7C3AED, #38BDF8); display: grid; place-items: center; color: #fff; font-size: 15px; box-shadow: 0 0 22px rgba(124, 58, 237, .55); flex: none; }
+        .brief-h b { font-size: 15px; }
+        .brief-h small { display: block; color: var(--dim); font: 11px var(--mono); margin-top: 2px; }
+        .brief-sum { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+        .brief-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding: 14px 16px 16px; }
+        .brf { border: 1px solid #1E2A55; border-radius: 12px; padding: 12px 13px; background: rgba(7, 13, 27, .85); display: flex; flex-direction: column; gap: 6px; transition: opacity .35s, filter .35s, transform .35s; }
+        .brf .tag { font: 700 9.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+        .brf.bad { border-color: #5B1220; } .brf.bad .tag { color: #FCA5A5; }
+        .brf.warn { border-color: #5A3D08; } .brf.warn .tag { color: #FCD34D; }
+        .brf.ok .tag { color: #6EE7B7; } .brf.info .tag { color: #93C5FD; }
+        .brf b { font-size: 13.5px; line-height: 1.35; }
+        .brf p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+        .brf p b { font-size: 12px; color: #E8EEFC; }
+        .brf .meta { margin-top: auto; padding-top: 6px; display: flex; justify-content: space-between; gap: 8px; font: 10.5px var(--mono); color: var(--dim); border-top: 1px dashed #1E2A55; }
+        .brf .meta .imp { color: #6EE7B7; font-weight: 700; }
+        .brief.thinking .brf { opacity: .15; filter: blur(2px); transform: translateY(4px); }
+        .brief.thinking .orb { animation: think .9s ease-in-out infinite; }
+        .brief.done .brf { transition-delay: calc(var(--i) * 90ms); }
+        @keyframes think { 50% { transform: rotate(180deg) scale(.9); } }
+        .hc.load { color: #BAE6FD; font-weight: 400; border-color: #12305A; }
+
+        .impact { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+        .imp-t { padding: 8px 10px; border-radius: 10px; background: #070D1B; border: 1px solid #16264A; }
+        .imp-t span { display: block; font-size: 10.5px; color: var(--dim); }
+        .imp-t b { font: 700 16px var(--mono); color: #E8EEFC; }
+        .imp-t:nth-child(3) b, .imp-t:nth-child(4) b { color: #6EE7B7; }
+        .ai-feed { display: grid; gap: 8px; }
+        .af { padding: 9px 11px; border-radius: 10px; border: 1px solid #1F1B4A; background: linear-gradient(180deg, rgba(124, 58, 237, .08), rgba(7, 13, 27, .6)); font-size: 12px; animation: afin .4s ease-out; }
+        .af .t { font: 10px var(--mono); color: #6D5BB0; }
+        .af p { color: #B9C6E6; line-height: 1.5; margin-top: 2px; }
+        .af p b { color: #fff; }
+        .af.bad { border-color: #5B1220; } .af.warn { border-color: #5A3D08; } .af.ok { border-color: #0B4D3A; }
+        @keyframes afin { from { opacity: 0; transform: translateY(-4px); } }
+
+        .presenter-only { display: none; }
+        .app.presenter .presenter-only { display: inline-flex; }
+        .app.presenter .tech { display: none !important; }
+        .app.presenter .sim-left { --logh: 0px; }
+        .app.presenter .map-card { height: clamp(440px, calc(100vh - 136px), 900px); }
+
+        @media (max-width: 1280px) { .brief-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 600px) { .brief-list { grid-template-columns: 1fr; } .brief-sum { margin-left: 0; } }
+        @media (prefers-reduced-motion: reduce) { .af, .brief .orb { animation: none !important; } .brf { transition: none; } }
     </style>
 </head>
 
@@ -534,9 +598,13 @@
                                     <button data-sp="2">2×</button>
                                     <button data-sp="4">4×</button>
                                 </div>
-                                <label class="switch" title="When on, the next automated swap stalls (gripper loses its ArUco lock) so you can practise the manual takeover.">
+                                <label class="switch tech" title="When on, the next automated swap stalls (gripper loses its ArUco lock) so you can practise the manual takeover.">
                                     <input type="checkbox" id="chk-fail"><span class="tr"></span> Simulate automation failure
                                 </label>
+                                <label class="switch" title="Presenter view hides the server log, gripper camera, telemetry and manual controls. Turn it off for technical questions.">
+                                    <input type="checkbox" id="chk-presenter"><span class="tr"></span> Presenter view
+                                </label>
+                                <button class="btn pri" id="btn-pitch" title="One-click demo: faults appear, the robot swaps them, then the AI dashboard opens">▶ Pitch demo</button>
                             </div>
                         </div>
 
@@ -548,6 +616,7 @@
                                     <button class="btn sm" data-view="front">Front</button>
                                     <button class="btn sm" data-view="side">Side</button>
                                     <button class="btn sm" data-view="follow" title="Camera follows the gripper">Follow</button>
+                                    <button class="btn sm danger presenter-only" id="btn-estop2" title="Emergency stop (Esc)">E-STOP</button>
                                 </div>
                                 <div class="scene-axes" id="scene-axes"></div>
                                 <div class="scene-tip" id="scene-tip"></div>
@@ -562,7 +631,7 @@
                             </div>
                         </div>
 
-                        <div class="card log-card" id="log-card" data-open="false">
+                        <div class="card log-card tech" id="log-card" data-open="false">
                             <div class="card-h log-h">
                                 <button class="log-toggle" id="log-toggle" aria-expanded="false" aria-controls="sim-log" title="Show or hide the server log">
                                     <svg class="ic chev"><use href="#i-down" /></svg>
@@ -577,8 +646,16 @@
                         </div>
                     </div>
 
-                    <aside class="sim-right" aria-label="Camera, telemetry and manual control">
-                        <div class="card" id="card-cam">
+                    <aside class="sim-right" aria-label="AI commentary, camera, telemetry and manual control">
+                        <div class="card" id="card-ai">
+                            <div class="card-h"><span><span class="spk-i">✦</span> Corvin AI · live</span><span class="pill" id="ai-live-pill">watching</span></div>
+                            <div class="card-b">
+                                <div class="impact" id="ai-impact"></div>
+                                <div class="ai-feed" id="ai-feed"></div>
+                            </div>
+                        </div>
+
+                        <div class="card tech" id="card-cam">
                             <div class="card-h"><span>Gripper camera</span><span class="pill" style="font-size:9.5px">rendered POV</span></div>
                             <div class="cam live" id="cam">
                                 <canvas id="pov"></canvas>
@@ -595,7 +672,7 @@
                             <div class="cap" id="cam-cap">Arm parked.</div>
                         </div>
 
-                        <div class="card" id="card-tel">
+                        <div class="card tech" id="card-tel">
                             <div class="card-h"><span>Robot telemetry</span><span id="t-mode"></span></div>
                             <div class="card-b tele">
                                 <div class="tl"><span>Gripper at</span><b id="t-pos">—</b></div>
@@ -606,7 +683,7 @@
                             </div>
                         </div>
 
-                        <div class="card" id="card-man">
+                        <div class="card tech" id="card-man">
                             <div class="card-h">
                                 <span>Manual control</span>
                                 <label class="switch"><input type="checkbox" id="chk-manual"><span class="tr"></span> Manual</label>
@@ -651,7 +728,7 @@
                 <div class="bar">
                     <div>
                         <h1>Dashboard</h1>
-                        <div class="sub">Rack R-01 · component failures, timing and condition · mock weekly data blended with live simulation events</div>
+                        <div class="sub">Site history (9,600 servers, mock) + live rack R-01 · what breaks, when, how long, and what to do about it</div>
                     </div>
                     <div class="seg" id="week-seg" role="group" aria-label="Week">
                         <button class="on" data-w="0">This week</button>
@@ -666,27 +743,33 @@
                     <article class="card kpi small span-2" id="kpi-mttr"></article>
                     <article class="card kpi small span-2" id="kpi-spares"></article>
 
+                    <article class="card span-12 brief" id="ai-brief"></article>
+
                     <article class="card span-7">
                         <div class="card-h"><span>Top failing components</span><span style="color:var(--dim);text-transform:none;letter-spacing:0;font-weight:400" id="hw-sub"></span></div>
                         <div class="card-b" id="ch-hw"></div>
+                        <div id="ai-hw"></div>
                     </article>
 
                     <article class="card span-5">
-                        <div class="card-h"><span>Component condition · live</span><span id="cond-pill" class="pill"></span></div>
+                        <div class="card-h"><span>Component condition · live R-01</span><span id="cond-pill" class="pill"></span></div>
                         <div class="card-b" id="ch-cond"></div>
+                        <div id="ai-cond"></div>
                     </article>
 
                     <article class="card span-7">
                         <div class="card-h"><span id="heat-title">When components break</span><button class="btn sm" id="heat-all" hidden>Show all parts</button></div>
                         <div class="card-b" id="ch-heat"></div>
+                        <div id="ai-heat"></div>
                     </article>
 
                     <article class="card span-5">
                         <div class="card-h"><span>Recent breakdowns · time broken</span><span id="brk-pill" class="pill"></span></div>
                         <div class="card-b"><div class="brk" id="ch-brk"></div></div>
+                        <div id="ai-brk"></div>
                     </article>
                 </div>
-                <p class="foot-note">Weekly figures are deterministic mock data. Live parts: the active-fault count, spares, component condition and every fault you create or fix in the Swap Simulation (marked LIVE), stored in this browser. "Time broken" = from the moment a part fails to the moment its replacement passes the LED check. Supplier names are placeholders.</p>
+                <p class="foot-note">Weekly figures are deterministic mock data for a site of 9,600 servers; rack R-01 (active faults, spares, condition, LIVE rows) comes from the Swap Simulation and is stored in this browser. Corvin AI insights are computed from the numbers on this page (benchmark AFR comparison, position and time-of-day concentration, correlation with rack load). Impact assumptions: a manual swap takes 38 min hands-on and 2.5 h from ticket to restored; spare reorders cover a 2-week lead time plus 1 week of safety stock. "Time broken" = from the moment a part fails to the moment its replacement passes the LED check. Supplier names and benchmark rates are placeholders.</p>
             </section>
         </main>
     </div>
@@ -1256,6 +1339,7 @@
         if (spares[b.comp] <= 0) {
             b.fault.status = 'blocked'; renderServer(s); renderOrders(); recordFail(b);
             log(`⛔ No spare ${c.name} in the caddy — ${s.id} bay left empty. Restock to continue.`, 'alert');
+            aiSay(`Caddy ran out of <b>${c.abbr}</b>, so ${s.id} is waiting with an empty bay. At this week's site rate, keep at least 2 ${c.abbr} per caddy. Press Restock to finish the job.`, 'bad');
             return 'nospare';
         }
         if (!await fetchSpare(b.comp, t)) return false;
@@ -1269,6 +1353,7 @@
         const r = recOf(b); const took = r ? r.dur : null;
         b.fault = null; b.health = 100; saveHealth(); renderServer(s); renderOrders();
         log(`✅ ${s.id} · ${c.name} replaced — LED check passed. Time broken ${fmtDur(took)}.`, 'ok');
+        aiOnSwap(s, b, took);
         if (!openFaults(s).length) s.inspected = false;
         updateHud();
         return true;
@@ -1358,10 +1443,12 @@
             const hit = injectFaults({ revealed: true, servers: rand(2, 3) });
             log(`⚠️ ALERT: ${hit.map(s => `${s.id} (${faultList(s)})`).join('; ')} reported via BMC.`, 'alert');
             S.mode = 'auto';
+            aiPlan();
         } else {
             const hit = injectFaults({ revealed: false, servers: 2 });
             log(`👁️ BMC flags ${hit.map(s => s.id).join(' and ')} — anomaly detected, failed component unknown. Robot will inspect each bay.`, 'alert');
             S.mode = 'inspect';
+            aiSay(`${hit.map(s => s.id).join(' and ')} report an anomaly but not which part. Corvin checks all ${NB} bay LEDs with the camera first. This is the slow path: component-level BMC codes would skip it.`, 'warn');
         }
         await delay(300);
         autoRun(t);
@@ -1394,6 +1481,17 @@
         S.running = false; S.mode = 'idle';
         if (!blocked) log('✅ Rack R-01 healthy. Arm parked above the caddy.', 'ok');
         updateHud();
+        if (S.pitch) {
+            S.pitch = false;
+            aiSay('Rack R-01 is healthy again. Opening the weekly briefing: what keeps breaking, why, and what to change.', 'ok');
+            setTimeout(() => showTab('dash'), 1800);
+        }
+    }
+    function aiPlan() {
+        const lf = liveFaults(), crit = lf.filter(x => x.b.fault.sev === 'critical');
+        const parts = [...new Set(lf.map(x => comp(x.b.comp).abbr))];
+        const short = parts.filter(a => spares[COMPONENTS.find(c => c.abbr === a).key] <= 0);
+        aiSay(`${lf.length} faulty part${lf.length > 1 ? 's' : ''} on ${new Set(lf.map(x => x.s.id)).size} server${lf.length > 1 ? 's' : ''} (${parts.join(', ')}). ${crit.length ? `Critical first: <b>${crit.map(x => x.s.id + ' · ' + comp(x.b.comp).abbr).join(', ')}</b>, then nearest-first. ` : 'Order: nearest-first to cut arm travel. '}${short.length ? `No spare for ${short.join(', ')}: restock now.` : 'The caddy has every spare needed.'}`, crit.length ? 'bad' : '');
     }
 
     /* stall → manual takeover */
@@ -1403,6 +1501,8 @@
         if (b && b.fault) b.fault.status = 'open';
         if (s && b) S.cur = { row: s.row, col: b.col };
         log(`⛔ AUTOMATION FAILED — ${reason}. Robot holds position; manual control enabled.`, 'alert');
+        aiSay(`Stopped safely: ${reason}. Corvin will not guess a position near live hardware, so it hands over to the operator. Likely cause: a dirty or misaligned marker. Clean it, then press <b>Resume auto</b>.`, 'bad');
+        S.pitch = false;
         renderAllServers(); renderOrders(); updateHud();
     }
     function setManual(on) {
@@ -1597,7 +1697,9 @@
         $('#btn-dock').disabled = S.estop || S.running || busy;
         const es = $('#btn-estop'); es.textContent = S.estop ? 'RESET E-STOP' : 'E-STOP';
         es.onclick = S.estop ? resetEstop : engageEstop;
+        const es2 = $('#btn-estop2'); es2.textContent = es.textContent; es2.onclick = es.onclick;
         $('#chk-manual').disabled = S.estop;
+        renderAiLive();
         if (G.beacon) G.beacon.material.emissive.setHex(S.estop || S.stalled ? 0xef4444 : S.manual ? 0x22d3ee : S.running ? (S.mode === 'inspect' ? 0xf59e0b : 0x3b82f6) : 0x475569);
         updateTelemetry();
         if (S.tab === 'dash') renderDashboardSoon();
@@ -1617,8 +1719,17 @@
 
     /* ============================================================
        Dashboard
+       Weekly history is mock data for the whole site (FLEET); the
+       live parts (active faults, spares, condition) come from rack
+       R-01 in the simulation.
     ============================================================ */
     const BINS = ['00–04', '04–08', '08–12', '12–16', '16–20', '20–24'];
+    const FLEET = { servers: 9600, racks: 1200 };
+    // typical annualised failure rate (%) per part type — placeholder benchmark
+    const BENCH_AFR = { cpu: 1.4, gpu: 2.4, ram: 1.8, psu: 1.6, nic: 1.5, disk: 2.6, fan: 2.0 };
+    // assumptions behind the "impact" numbers (shown in the footnote)
+    const ASSUME = { handsMin: 38, manualMttrH: 2.5, leadWeeks: 2, safetyWeeks: 1 };
+    const afrOf = n => n * 52 / FLEET.servers * 100;
     function weekRange(w) { const s = new Date(); s.setHours(0, 0, 0, 0); s.setDate(s.getDate() - w * 7 - 6); return [s.getTime(), s.getTime() + 7 * DAY]; }
     function buildMockWeek(w) {
         const rng = seeded(9100 + w * 977), ri = (a, b) => a + Math.floor(rng() * (b - a + 1));
@@ -1640,6 +1751,8 @@
         return recs;
     }
     const MOCK = [buildMockWeek(0), buildMockWeek(1), buildMockWeek(2)];
+    // average rack power draw per 4-hour window (kW of a 45 kW budget) — mock telemetry
+    const LOAD = [0, 1, 2].map(w => { const r = seeded(5150 + w * 31); return [21, 18, 26, 35, 37, 29].map(v => +(v + (r() - .5) * 3 + (w === 0 ? 1.5 : 0)).toFixed(1)); });
     function getWeek(w) {
         const [start, end] = weekRange(w);
         const recs = MOCK[w].concat(live.recs.filter(r => r.t >= start && r.t < end));
@@ -1648,8 +1761,69 @@
         recs.forEach(r => { faultComps[r.comp]++; if (r.restored && r.mode !== 'reset') { const di = Math.floor((r.restored - start) / DAY); if (di >= 0 && di < 7) swapsPerDay[di]++; } });
         const done = recs.filter(r => r.restored && r.mode !== 'reset');
         const attempts = done.length + sum(recs.map(r => r.fails || 0));
-        return { start, labels, recs, faultComps, swapsPerDay, swaps: done.length, success: attempts ? done.length / attempts * 100 : 100, mttr: mean(done.map(r => r.dur)) };
+        return { w, start, labels, recs, done, faultComps, swapsPerDay, load: LOAD[w], swaps: done.length, success: attempts ? done.length / attempts * 100 : 100, mttr: mean(done.map(r => r.dur)) };
     }
+
+    /* ---------- analysis engine (rule-based: every claim comes from the numbers on screen) ---------- */
+    function pearson(a, b) {
+        const ma = mean(a), mb = mean(b);
+        let n = 0, da = 0, db = 0;
+        a.forEach((v, i) => { n += (v - ma) * (b[i] - mb); da += (v - ma) ** 2; db += (b[i] - mb) ** 2; });
+        return da && db ? n / Math.sqrt(da * db) : 0;
+    }
+    const binOf = t => Math.floor(new Date(t).getHours() / 4);
+    const countBy = (arr, f) => arr.reduce((m, x) => { const k = f(x); m[k] = (m[k] || 0) + 1; return m; }, {});
+    const confOf = n => n >= 8 ? 'high' : n >= 4 ? 'medium' : 'low';
+    function diagnose(d, key) {
+        const recs = d.recs.filter(r => r.comp === key), n = recs.length;
+        const bySrv = Object.entries(countBy(recs, r => r.server)).sort((a, b) => b[1] - a[1]);
+        const byBin = BINS.map((_, i) => recs.filter(r => binOf(r.t) === i).length);
+        const r = n >= 3 ? pearson(byBin, d.load) : 0, peak = n ? (byBin[3] + byBin[4]) / n : 0;
+        const afr = afrOf(n), bench = BENCH_AFR[key], x = afr / bench;
+        const top = bySrv[0] || ['—', 0], topShare = n ? top[1] / n : 0;
+        const causes = [];
+        if (n >= 4 && topShare >= .35) causes.push('slot');
+        if (n >= 5 && r >= .6) causes.push('load');
+        if (x >= 2 && !causes.includes('slot')) causes.push('brand');
+        const expected = bench / 100 * FLEET.servers / 52;          // failures/week at benchmark AFR
+        return { key, c: comp(key), n, byBin, r, peak, afr, bench, x, top: top[0], topN: top[1], topShare, causes, excess: Math.max(0, n - expected), reorder: Math.ceil(n * (ASSUME.leadWeeks + ASSUME.safetyWeeks)) };
+    }
+    function partVerdict(g) {
+        const c = g.c, ev = `${g.n} failures · AFR ${g.afr.toFixed(1)}% vs ${g.bench}% benchmark (${g.x.toFixed(1)}×)`;
+        if (g.causes.includes('slot')) return { tone: 'warn', head: `${c.abbr}: fix position ${g.top} first, not the brand`, text: `<b>${g.topN} of ${g.n}</b> ${c.name} failures are in position ${g.top}. A part that keeps dying in one place points at the slot (backplane, airflow, seating). Changing brand would not fix it.`, act: `Inspect ${g.top} slots`, ev };
+        if (g.causes.includes('load') && g.causes.includes('brand')) return { tone: 'bad', head: `${c.abbr}: change the series and trial a new supplier`, text: `${c.name} fails at <b>${g.x.toFixed(1)}×</b> the benchmark rate, and the failures follow rack load (<b>r = ${g.r.toFixed(2)}</b>, ${Math.round(g.peak * 100)}% between 12–20 h). Parts are running too close to their rating. Move to a higher-rated ${c.abbr} series and trial another supplier on 2 racks. Switch brand only if the trial AFR drops below ${g.bench}%.`, act: `Upgrade series · A/B supplier`, ev };
+        if (g.causes.includes('load')) return { tone: 'warn', head: `${c.abbr}: load-driven, upgrade the rating`, text: `${c.name} failures follow rack load (<b>r = ${g.r.toFixed(2)}</b>). The brand is near benchmark (${g.x.toFixed(1)}×), so a higher-rated series and better cooling will help more than a new supplier.`, act: 'Higher-rated series', ev };
+        if (g.causes.includes('brand')) return { tone: 'bad', head: `${c.abbr}: supplier quality issue`, text: `${c.name} from ${c.brand} fails at <b>${g.x.toFixed(1)}×</b> the benchmark, spread across positions and hours. It is not one slot or the heat: it is the part. Open a quality claim and qualify a second brand.`, act: `Review ${c.brand}`, ev };
+        if (g.x >= 1.3) return { tone: 'warn', head: `${c.abbr}: above benchmark, keep watching`, text: `${c.name} is at ${g.x.toFixed(1)}× the benchmark with no clear cause yet (not one slot, not load-linked). Keep watching for one more week.`, act: 'Watch', ev };
+        return { tone: 'ok', head: `${c.abbr}: normal`, text: `${c.name} is within the benchmark. No action.`, act: 'None', ev };
+    }
+    function analyse(d, p) {
+        const diags = COMPONENTS.map(c => diagnose(d, c.key)).sort((a, b) => b.n - a.n);
+        const top = diags[0], topV = partVerdict(top);
+        // positions (servers) across the fleet
+        const bySrv = Object.entries(countBy(d.recs, r => r.server)).sort((a, b) => b[1] - a[1]);
+        const posAvg = d.recs.length / NS, hot = bySrv[0], hotX = hot ? hot[1] / posAvg : 0;
+        // inspect vs auto
+        const auto = d.done.filter(r => r.mode === 'auto'), insp = d.done.filter(r => r.mode === 'inspect');
+        const ma = mean(auto.map(r => r.dur)), mi = mean(insp.map(r => r.dur));
+        const ifAuto = d.done.length ? mean(d.done.map(r => r.mode === 'inspect' ? ma : r.dur)) : 0;
+        // labour + downtime impact
+        const robotMin = sum(d.done.map(r => Math.min(r.dur, 20 * 60000))) / 60000;
+        const techH = Math.max(0, (d.swaps * ASSUME.handsMin - robotMin) / 60);
+        const downH = Math.max(0, d.swaps * ASSUME.manualMttrH - sum(d.done.map(r => r.dur)) / 3600000);
+        const night = d.done.filter(r => { const h = new Date(r.restored).getHours(); return h < 7 || h >= 21; }).length;
+        // condition (live R-01)
+        const worn = []; servers.forEach(s => s.bays.forEach(b => { if (!b.fault && b.health < 40) worn.push({ s, b }); }));
+        worn.sort((a, b) => a.b.health - b.b.health);
+        const quiet = d.load.indexOf(Math.min(...d.load));
+        // failed attempts
+        const failRecs = d.recs.filter(r => r.fails), failN = sum(failRecs.map(r => r.fails));
+        const failSrv = Object.entries(countBy(failRecs, r => r.server)).sort((a, b) => b[1] - a[1])[0];
+        return { diags, top, topV, bySrv, hot, hotX, posAvg, ma, mi, ifAuto, insN: insp.length, techH, downH, night, robotMin, worn, quiet, failN, failSrv };
+    }
+
+    /* ---------- rendering ---------- */
+    const aiBox = (text, act, tone = '') => `<div class="ai ${tone}"><span class="spk">✦</span><div><b class="t">Corvin AI</b><p>${text}</p>${act ? `<span class="act">→ ${act}</span>` : ''}</div></div>`;
     function spark(vals, color) {
         const w = 90, h = 26, mx = Math.max(...vals, 1), mn = Math.min(...vals, 0);
         const pts = vals.map((v, i) => [i * (w - 4) / (vals.length - 1) + 2, h - 3 - (v - mn) / ((mx - mn) || 1) * (h - 8)]);
@@ -1661,44 +1835,73 @@
         const up = diff >= 0, good = goodWhenUp ? up : !up, flat = Math.abs(diff) < .05;
         return `<span class="dl ${flat ? 'flat' : good ? 'good' : 'bad'}">${up ? '▲' : '▼'} ${Math.abs(diff).toFixed(abs ? 1 : 0)}${unit}</span>`;
     }
-    function renderKpis(d, p) {
-        const open = servers.reduce((n, s) => n + openFaults(s).length, 0), srvOpen = servers.filter(s => openFaults(s).length).length;
-        const crit = servers.reduce((n, s) => n + openFaults(s).filter(b => b.fault.sev === 'critical').length, 0);
-        $('#kpi-faults').innerHTML = `<div class="kpi-l">Active faults · live</div><div class="kpi-v" style="color:${open ? '#FCA5A5' : '#6EE7B7'}">${open}<small>${open ? `on ${srvOpen} server${srvOpen > 1 ? 's' : ''}` : 'all clear'}</small></div><div class="kpi-f"><span class="dl ${open ? 'bad' : 'good'}">${open ? (crit ? `${crit} CRITICAL` : 'ATTENTION') : 'HEALTHY'}</span><span class="kpi-s">${servers.filter(s => s.suspect).length ? 'incl. unconfirmed' : 'rack R-01'}</span></div>`;
-        $('#kpi-swaps').innerHTML = `<div class="kpi-l">Components swapped</div><div class="kpi-v">${d.swaps}<small>parts / 7 days</small></div><div class="kpi-f">${dpill(d.swaps, p && p.swaps, false)}${spark(d.swapsPerDay, '#3B82F6')}</div>`;
-        $('#kpi-success').innerHTML = `<div class="kpi-l">Swap success</div><div class="kpi-v">${d.success.toFixed(1)}<small>%</small></div><div class="kpi-f">${dpill(d.success, p && p.success, true, ' pts', true)}</div>`;
-        $('#kpi-mttr').innerHTML = `<div class="kpi-l">Avg time broken</div><div class="kpi-v">${d.mttr ? fmtDur(d.mttr).replace(' min', '<small>min</small>').replace(/s$/, '<small>s</small>') : '—'}</div><div class="kpi-f">${p && p.mttr && d.mttr ? dpill(d.mttr, p.mttr, false) : '<span class="dl flat">—</span>'}<span class="kpi-s">fail → restored</span></div>`;
+    function liveFaults() {
+        const list = []; servers.forEach(s => s.bays.forEach(b => { if (b.fault && b.fault.status !== 'fixed') list.push({ s, b }); }));
+        return list;
+    }
+    function renderKpis(d, p, A) {
+        const lf = liveFaults(), open = lf.length, srvOpen = new Set(lf.map(x => x.s.id)).size;
+        const crit = lf.filter(x => x.b.fault.sev === 'critical');
+        const perSwap = Math.max(1.5, mean(live.recs.filter(r => r.dur && r.mode !== 'reset').map(r => r.dur)) / 60000 || 1.5);
+        const noSpare = lf.filter(x => spares[x.b.comp] <= 0).map(x => comp(x.b.comp).abbr);
+        let fInsight, fAct, fTone = '';
+        if (open) {
+            const first = (crit[0] || lf[0]);
+            fInsight = `Clears in about <b>${Math.ceil(open * perSwap)} min</b> at the current swap pace. Do ${first.s.id} · ${comp(first.b.comp).abbr} first${crit.length ? ' (critical)' : ''}.${noSpare.length ? ` No spare in the caddy for <b>${[...new Set(noSpare)].join(', ')}</b>: restock first.` : ' The caddy has all the spares needed.'}`;
+            fAct = noSpare.length ? 'Restock caddy' : 'Auto-swap queued'; fTone = 'bad';
+        } else if (A.worn.length) {
+            const w0 = A.worn[0];
+            fInsight = `Rack healthy. Most likely next failure: <b>${w0.s.id} · ${comp(w0.b.comp).abbr}</b> at ${Math.round(w0.b.health)}% health. Swap it early in the quiet ${BINS[A.quiet]} window.`;
+            fAct = 'Plan proactive swap';
+        } else { fInsight = 'Rack healthy and no worn parts. Nothing to schedule.'; fAct = ''; }
+        $('#kpi-faults').innerHTML = `<div class="kpi-l">Active faults · live R-01</div><div class="kpi-v" style="color:${open ? '#FCA5A5' : '#6EE7B7'}">${open}<small>${open ? `on ${srvOpen} server${srvOpen > 1 ? 's' : ''}` : 'all clear'}</small></div><div class="kpi-f"><span class="dl ${open ? 'bad' : 'good'}">${open ? (crit.length ? `${crit.length} CRITICAL` : 'ATTENTION') : 'HEALTHY'}</span><span class="kpi-s">${servers.filter(s => s.suspect).length ? 'incl. unconfirmed' : 'rack R-01'}</span></div>` + aiBox(fInsight, fAct, fTone);
+
+        $('#kpi-swaps').innerHTML = `<div class="kpi-l">Components swapped · site</div><div class="kpi-v">${d.swaps}<small>parts / 7 days</small></div><div class="kpi-f">${dpill(d.swaps, p && p.swaps, false)}${spark(d.swapsPerDay, '#3B82F6')}</div>` +
+            aiBox(`About <b>${A.techH.toFixed(0)} technician-hours</b> saved (${d.swaps} × ${ASSUME.handsMin} min hands-on, minus robot time). <b>${A.night}</b> swaps ran at night with no on-call call-out. Most of the rise vs last week is ${A.top.c.abbr} (${A.top.n}).`, 'See top failing parts');
+
+        const sTone = d.success < 95 ? 'bad' : '';
+        $('#kpi-success').innerHTML = `<div class="kpi-l">Swap success</div><div class="kpi-v">${d.success.toFixed(1)}<small>%</small></div><div class="kpi-f">${dpill(d.success, p && p.success, true, ' pts', true)}</div>` +
+            aiBox(A.failN ? `${A.failN} ${A.failN === 1 ? "retry" : "retries"}${A.failSrv ? `, most at position <b>${A.failSrv[0]}</b>` : ''}: recalibrate its ArUco marker and clean the lens. Target ≥ 98%.` : 'No retries this week. Target ≥ 98% met.', A.failN ? 'Recalibrate marker' : '', sTone);
+
+        const mStr = d.mttr ? fmtDur(d.mttr).replace(' min', '<small>min</small>').replace(/s$/, '<small>s</small>') : '—';
+        $('#kpi-mttr').innerHTML = `<div class="kpi-l">Avg time broken</div><div class="kpi-v">${mStr}</div><div class="kpi-f">${p && p.mttr && d.mttr ? dpill(d.mttr, p.mttr, false) : '<span class="dl flat">—</span>'}<span class="kpi-s">fail → restored</span></div>` +
+            aiBox(A.insN ? `Inspect jobs take <b>${fmtDur(A.mi)}</b> vs ${fmtDur(A.ma)} when the BMC names the part. Component-level fault codes would bring this to about <b>${fmtDur(A.ifAuto)}</b>.` : 'Every job had the part named by the BMC: this is close to the floor.', A.insN ? 'Enable BMC part codes' : '');
+
         const tot = sum(Object.values(spares)), low = COMPONENTS.filter(c => spares[c.key] <= 1);
-        $('#kpi-spares').innerHTML = `<div class="kpi-l">Spares in caddy</div><div class="kpi-v">${tot}<small>/ ${SPARE_CAP * NB}</small></div><div class="kpi-f">${low.length ? `<span class="dl bad" title="${esc(low.map(c => c.name).join(', '))}">LOW: ${low.slice(0, 2).map(c => c.abbr).join(' ')}${low.length > 2 ? ' +' + (low.length - 2) : ''}</span>` : '<span class="dl good">STOCKED</span>'}</div>`;
+        const order = A.diags.slice(0, 2).map(g => `${g.c.abbr} ×${g.reorder}`).join(', ');
+        $('#kpi-spares').innerHTML = `<div class="kpi-l">Spares in caddy</div><div class="kpi-v">${tot}<small>/ ${SPARE_CAP * NB}</small></div><div class="kpi-f">${low.length ? `<span class="dl bad" title="${esc(low.map(c => c.name).join(', '))}">LOW: ${low.slice(0, 2).map(c => c.abbr).join(' ')}${low.length > 2 ? ' +' + (low.length - 2) : ''}</span>` : '<span class="dl good">STOCKED</span>'}</div>` +
+            aiBox(`${low.length ? `Restock R-01: <b>${low.map(c => c.abbr).join(', ')}</b>. ` : ''}Site order this week: <b>${order}</b> (${ASSUME.leadWeeks}-week lead time + ${ASSUME.safetyWeeks}-week buffer).`, low.length ? 'Restock R-01' : 'Raise PO', low.length ? 'warn' : '');
     }
     function hwRows(d, p) {
         const vals = COMPONENTS.map(c => d.faultComps[c.key]), avg = mean(vals);
         return COMPONENTS.map(c => {
             const v = d.faultComps[c.key], pv = p ? p.faultComps[c.key] : null;
             const rise = pv ? (v - pv) / pv : 0, ratio = avg ? v / avg : 0;
-            const status = (ratio >= 1.5 || (ratio >= 1.2 && rise >= .3)) ? 'review' : (ratio >= 1.2 || rise >= .25) ? 'watch' : 'ok';
-            return { c, v, pv, ratio, rise, status };
+            const g = diagnose(d, c.key), verdict = partVerdict(g);
+            return { c, v, pv, ratio, rise, g, verdict };
         }).sort((a, b) => b.v - a.v);
     }
-    function renderHardware(d, p) {
+    function renderHardware(d, p, A) {
         const rows = hwRows(d, p), max = Math.max(1, ...rows.map(r => r.v), ...rows.map(r => r.pv || 0));
-        const label = { review: 'Review supplier', watch: 'Watch', ok: 'Normal' };
-        $('#hw-sub').textContent = `failures · tick = previous week · click a row to filter timing`;
-        $('#ch-hw').innerHTML = `<div class="hw-head"><span>Component</span><span>Failures this week</span><span>#</span><span>vs prev.</span><span>Verdict</span></div>` + rows.map(r => {
-            const delta = r.pv == null ? null : r.v - r.pv;
-            return `<div class="hw-row ${S.heatComp === r.c.key ? 'sel' : ''}" data-comp="${r.c.key}" role="button" tabindex="0" title="${esc(r.c.name)}: ${r.v} failures (${r.ratio.toFixed(1)}× component average) — click to see when it breaks">
+        const lbl = { bad: ['review', 'Change part'], warn: ['watch', 'Check'], ok: ['ok', 'Normal'] };
+        $('#hw-sub').textContent = `site failures · tick = previous week · click a row to filter timing`;
+        $('#ch-hw').innerHTML = `<div class="hw-head"><span>Component</span><span>Failures this week</span><span>#</span><span>AFR × bench</span><span>Verdict</span></div>` + rows.map(r => {
+            const [cls, txt] = lbl[r.verdict.tone], x = r.g.x;
+            return `<div class="hw-row ${S.heatComp === r.c.key ? 'sel' : ''}" data-comp="${r.c.key}" role="button" tabindex="0" title="${esc(r.verdict.head)} — ${esc(r.verdict.ev)}">
                 <div class="hw-n"><b><i style="background:${CATS[r.c.cat].color}"></i>${esc(r.c.name)}</b><small>${CATS[r.c.cat].label} · ${r.c.brand}</small></div>
-                <div class="hw-track"><div class="hw-fill" style="width:${(r.v / max * 100).toFixed(1)}%;background:${r.status === 'review' ? '#EF4444' : r.status === 'watch' ? '#F59E0B' : '#3B82F6'}"></div>${r.pv != null ? `<div class="hw-prev" style="left:calc(${(r.pv / max * 100).toFixed(1)}% - 1px)"></div>` : ''}</div>
+                <div class="hw-track"><div class="hw-fill" style="width:${(r.v / max * 100).toFixed(1)}%;background:${cls === 'review' ? '#EF4444' : cls === 'watch' ? '#F59E0B' : '#3B82F6'}"></div>${r.pv != null ? `<div class="hw-prev" style="left:calc(${(r.pv / max * 100).toFixed(1)}% - 1px)"></div>` : ''}</div>
                 <div class="hw-v">${r.v}</div>
-                <div class="hw-d ${delta == null || delta === 0 ? 'flat' : delta > 0 ? 'up' : 'down'}">${delta == null ? '—' : delta === 0 ? '±0' : (delta > 0 ? '▲ ' : '▼ ') + Math.abs(delta)}</div>
-                <div class="hw-st ${r.status}">${label[r.status]}</div></div>`;
-        }).join('') + `<div class="hw-key"><span><i></i>previous week</span><span>Review supplier = ≥ 1.5× the component average, or above average and rising ≥ 30%.</span></div>`;
+                <div class="hw-d ${x >= 2 ? 'up' : x < 1 ? 'down' : 'flat'}">${x.toFixed(1)}×</div>
+                <div class="hw-st ${cls}">${txt}</div></div>`;
+        }).join('') + `<div class="hw-key"><span><i></i>previous week</span><span>AFR = annualised failure rate over ${FLEET.servers.toLocaleString('en-US')} servers, compared with the benchmark for that part type.</span></div>`;
         $$('#ch-hw .hw-row').forEach(el => {
             const go = () => { S.heatComp = S.heatComp === el.dataset.comp ? null : el.dataset.comp; renderDashboard(); };
             el.onclick = go; el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
         });
+        const g = S.heatComp ? diagnose(d, S.heatComp) : A.top, v = partVerdict(g);
+        $('#ai-hw').innerHTML = aiBox(`<b>${esc(v.head)}.</b> ${v.text}<br><span class="ev">${esc(v.ev)}${g.causes.length ? ` · causes: ${g.causes.join(' + ')}` : ''}</span>`, v.act, v.tone);
     }
-    function renderCondition() {
+    function renderCondition(A) {
         let failed = 0, worn = 0, low = 0, hs = [];
         let html = `<div class="cond"><span></span>${COMPONENTS.map(c => `<span class="ch" title="${esc(c.name)}">${c.abbr}</span>`).join('')}`;
         servers.forEach(s => {
@@ -1716,11 +1919,16 @@
         html += `</div><div class="key"><span><i style="background:#0B4D3A"></i>Good ≥ 70%</span><span><i style="background:#6B4B0E"></i>Worn 40–69%</span><span><i style="background:#9A3412"></i>Replace soon &lt; 40%</span><span><i style="background:#B91C1C"></i>Failed</span></div>`;
         $('#ch-cond').innerHTML = `<div class="cond-sum"><span class="pill">avg health ${Math.round(mean(hs))}%</span>${low ? `<span class="pill human">${low} replace soon</span>` : ''}<span class="pill">${worn} worn</span></div>` + html;
         const pill = $('#cond-pill'); pill.textContent = failed ? `${failed} failed` : 'no failures'; pill.className = 'pill ' + (failed ? 'alert' : '');
+        const list = A.worn.slice(0, 4).map(x => `${x.s.id}·${comp(x.b.comp).abbr} ${Math.round(x.b.health)}%`).join(', ');
+        const byType = Object.entries(countBy(A.worn, x => x.b.comp)).sort((a, b) => b[1] - a[1])[0];
+        $('#ai-cond').innerHTML = aiBox(A.worn.length
+            ? `<b>${A.worn.length}</b> part${A.worn.length > 1 ? 's are' : ' is'} under 40%: ${list}${A.worn.length > 4 ? '…' : ''}. Swap ${A.worn.length > 1 ? 'them' : 'it'} in one planned batch during <b>${BINS[A.quiet]}</b> (lowest rack load, ${A.load[A.quiet]} kW), before ${A.worn.length > 1 ? 'they fail' : 'it fails'} under the afternoon peak.${byType && byType[1] >= 2 ? ` ${comp(byType[0]).abbr} wears fastest in this rack.` : ''}`
+            : 'No part is under 40% health. The next check is due after the weekly LED sweep.', A.worn.length ? `Schedule ${A.worn.length} proactive swap${A.worn.length > 1 ? 's' : ''}` : '', A.worn.length ? 'warn' : '');
     }
     function renderHeat(d) {
         const key = S.heatComp, recs = d.recs.filter(r => !key || r.comp === key);
         const m = Array.from({ length: 7 }, () => Array(6).fill(0));
-        recs.forEach(r => { const di = Math.floor((r.t - d.start) / DAY); if (di < 0 || di > 6) return; m[di][Math.floor(new Date(r.t).getHours() / 4)]++; });
+        recs.forEach(r => { const di = Math.floor((r.t - d.start) / DAY); if (di < 0 || di > 6) return; m[di][binOf(r.t)]++; });
         const max = Math.max(1, ...m.flat());
         const color = key ? CATS[comp(key).cat].color : '#EF4444';
         const rgb = [1, 3, 5].map(i => parseInt(color.slice(i, i + 2), 16)).join(',');
@@ -1732,18 +1940,24 @@
                 html += `<span class="hc ${v ? '' : 'z'} ${S.week === 0 && di === 6 ? 'today' : ''}" style="${v ? `background:rgba(${rgb},${a.toFixed(2)});border-color:rgba(${rgb},${Math.min(1, a + .15).toFixed(2)})` : ''}" title="${d.labels[di]} ${BINS[bi]}: ${v} failure${v === 1 ? '' : 's'}">${v || '·'}</span>`;
             });
         });
+        const lmax = Math.max(...d.load);
+        html += `<span class="rh" style="color:var(--dim)" title="Average rack power draw">kW</span>` + d.load.map((v, i) => `<span class="hc load" style="background:rgba(56,189,248,${(.08 + .4 * v / lmax).toFixed(2)})" title="${BINS[i]}: ${v} kW average rack draw (budget 45 kW)">${Math.round(v)}</span>`).join('');
         html += '</div>';
         const byBin = BINS.map((_, bi) => sum(m.map(r => r[bi]))), byDay = m.map(r => sum(r));
         const pb = byBin.indexOf(Math.max(...byBin)), pd = byDay.indexOf(Math.max(...byDay)), tot = sum(byBin);
-        const share = tot ? Math.round(byBin[pb] / tot * 100) : 0;
-        html += `<div class="heat-note">${tot ? `<b>${share}%</b> of ${key ? esc(cname(key)) : 'all'} failures happen between <b>${BINS[pb]}</b>; busiest day <b>${d.labels[pd]}</b> (${byDay[pd]}).${share >= 35 ? ' A clustered time window points at load or heat — check power draw and inlet temperature in that window.' : ''}` : 'No failures recorded for this part in this week.'}</div>`;
+        const share = tot ? Math.round(byBin[pb] / tot * 100) : 0, r = tot >= 3 ? pearson(byBin, d.load) : 0;
+        const quiet = d.load.indexOf(Math.min(...d.load));
         $('#ch-heat').innerHTML = html;
         $('#heat-title').textContent = key ? `When ${cname(key)} breaks · day × hour` : 'When components break · day × hour';
         $('#heat-all').hidden = !key;
+        const who = key ? esc(cname(key)) : 'all';
+        $('#ai-heat').innerHTML = aiBox(tot
+            ? `<b>${share}%</b> of ${who} failures happen in <b>${BINS[pb]}</b>; the busiest day is ${d.labels[pd]} (${byDay[pd]}). Correlation with rack load: <b>r = ${r.toFixed(2)}</b>. ${r >= .6 ? 'Failures rise with power draw, which points to heat and electrical stress, not random defects. Check PSU headroom and inlet temperature at peak.' : r <= .2 ? 'Failures do not follow load, so look at part quality or handling instead.' : 'Weak link to load: watch it, but no change to cooling is needed yet.'} Best maintenance window: <b>${BINS[quiet]}</b>.`
+            : 'No failures recorded for this part this week.', tot ? `Maintenance window ${BINS[quiet]}` : '', r >= .6 ? 'warn' : '');
     }
-    function renderBreakdowns(d) {
+    function renderBreakdowns(d, A) {
         const key = S.heatComp, now = Date.now();
-        const recs = d.recs.filter(r => (!key || r.comp === key) && r.mode !== 'reset' && r.t <= now).sort((a, b) => b.t - a.t).slice(0, 7);
+        const recs = d.recs.filter(r => (!key || r.comp === key) && r.mode !== 'reset' && r.t <= now).sort((a, b) => b.t - a.t).slice(0, 6);
         const openN = d.recs.filter(r => r.open).length;
         const pill = $('#brk-pill'); pill.textContent = openN ? `${openN} still broken` : `avg ${fmtDur(d.mttr)}`; pill.className = 'pill ' + (openN ? 'alert' : '');
         $('#ch-brk').innerHTML = recs.length ? recs.map(r => {
@@ -1751,14 +1965,68 @@
             const dur = still ? now - r.t : r.dur;
             return `<div class="brk-row"><b><i style="background:${CATS[c.cat].color}"></i><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.name)} · ${r.server}</span>${r.live ? '<span class="live">LIVE</span>' : ''}</b>
                 <span class="dur" style="${still ? 'color:#FCA5A5' : ''}">${fmtDur(dur)}<small>${still ? 'still broken' : 'time broken'}</small></span>
-                <small>broke ${when.toLocaleDateString('en-US', { weekday: 'short' })} ${pad2(when.getHours())}:${pad2(when.getMinutes())} · ${still ? 'waiting for swap' : (r.mode || 'auto') + (r.fails ? ` · ${r.fails} failed attempt` : '')}</small></div>`;
+                <small>broke ${when.toLocaleDateString('en-US', { weekday: 'short' })} ${pad2(when.getHours())}:${pad2(when.getMinutes())} · ${still ? 'waiting for swap' : (r.mode || 'auto') + (r.fails ? ` · ${r.fails} retry` : '')}</small></div>`;
         }).join('') : '<div class="empty">No breakdowns this week.</div>';
+        const longest = d.done.slice().sort((a, b) => b.dur - a.dur)[0];
+        $('#ai-brk').innerHTML = aiBox(`Position <b>${A.hot[0]}</b> broke <b>${A.hot[1]}</b> times, ${A.hotX.toFixed(1)}× the average position${A.hotX >= 1.6 ? ': a hot spot, so check airflow and blanking panels at that height' : ''}. ${longest ? `Longest outage: ${cname(longest.comp)} on ${longest.server}, ${fmtDur(longest.dur)} (${longest.mode}). ` : ''}Compared with a manual team (~${ASSUME.manualMttrH} h from ticket to restored), the robot avoided about <b>${A.downH.toFixed(0)} server-hours</b> of downtime.`, A.hotX >= 1.6 ? `Survey ${A.hot[0]} airflow` : '', A.hotX >= 1.6 ? 'warn' : '');
+    }
+    function renderBrief(d, A, animate) {
+        const recs = [];
+        recs.push({ tone: A.topV.tone, tag: 'Parts & suppliers', title: A.topV.head, text: A.topV.text, impact: A.top.excess >= 1 ? `≈ −${Math.round(A.top.excess)} failures/wk` : 'keeps AFR on target', conf: confOf(A.top.n) });
+        const second = A.diags.slice(1).map(g => ({ g, v: partVerdict(g) })).find(x => x.v.tone !== 'ok');
+        if (A.hotX >= 1.6) recs.push({ tone: 'warn', tag: 'Rack position', title: `Position ${A.hot[0]} is a hot spot`, text: `${A.hot[1]} breakdowns vs ${A.posAvg.toFixed(1)} on an average position (${A.hotX.toFixed(1)}×), across all part types. Something at that height (airflow, blanking panels, power rail) is hurting every part in it.`, impact: `≈ −${Math.max(1, Math.round(A.hot[1] - A.posAvg))} failures/wk`, conf: confOf(A.hot[1]) });
+        else if (second) recs.push({ tone: second.v.tone, tag: 'Parts & suppliers', title: second.v.head, text: second.v.text, impact: `≈ −${Math.max(1, Math.round(second.g.excess))} failures/wk`, conf: confOf(second.g.n) });
+        if (A.insN) recs.push({ tone: 'info', tag: 'Time broken', title: 'Ask servers to name the failed part', text: `${A.insN} jobs needed a bay-by-bay inspection (${fmtDur(A.mi)} each vs ${fmtDur(A.ma)}). Turning on component-level BMC fault codes lets Corvin go straight to the bay.`, impact: `avg ${fmtDur(d.mttr)} → ${fmtDur(A.ifAuto)}`, conf: confOf(A.insN) });
+        recs.push(A.worn.length
+            ? { tone: 'warn', tag: 'Predictive', title: `Swap ${A.worn.length} worn part${A.worn.length > 1 ? 's' : ''} before ${A.worn.length > 1 ? 'they fail' : 'it fails'}`, text: `Rack R-01 has ${A.worn.length} part${A.worn.length > 1 ? 's' : ''} under 40% health. Batch ${A.worn.length > 1 ? 'them' : 'it'} into the ${BINS[A.quiet]} window (${d.load[A.quiet]} kW, lowest load).`, impact: `${A.worn.length} unplanned outage${A.worn.length > 1 ? 's' : ''} avoided`, conf: 'medium' }
+            : { tone: 'ok', tag: 'Labour', title: `${A.techH.toFixed(0)} technician-hours freed this week`, text: `Corvin did ${d.swaps} swaps. Technicians can spend that time on design and capacity work instead of repetitive part swaps.`, impact: `${A.night} night call-outs avoided`, conf: 'high' });
+        const box = $('#ai-brief');
+        const n = d.recs.length;
+        box.innerHTML = `<div class="brief-h"><span class="orb">✦</span><div><b>Corvin AI · weekly briefing</b><small>analysed ${n} breakdowns · ${NB} part types · ${FLEET.servers.toLocaleString('en-US')} servers · rack load telemetry · live R-01</small></div>
+            <span class="brief-sum"><span class="pill">${A.techH.toFixed(0)} tech-h saved</span><span class="pill">${A.downH.toFixed(0)} server-h downtime avoided</span></span>
+            <button class="btn sm" id="btn-reanalyse" title="Run the analysis again on the current data">↻ Re-analyse</button></div>
+            <div class="brief-list">${recs.slice(0, 4).map((r, i) => `<div class="brf ${r.tone}" style="--i:${i}"><span class="tag">${i + 1} · ${r.tag}</span><b>${r.title}</b><p>${r.text}</p><div class="meta"><span class="imp">${r.impact}</span><span>confidence ${r.conf}</span></div></div>`).join('')}</div>`;
+        $('#btn-reanalyse').onclick = () => renderDashboard(true);
+        if (animate) { box.classList.remove('done'); box.classList.add('thinking'); setTimeout(() => { box.classList.remove('thinking'); box.classList.add('done'); }, 900); }
+        else box.classList.add('done');
     }
     let dashTimer = null;
-    const renderDashboardSoon = () => { clearTimeout(dashTimer); dashTimer = setTimeout(renderDashboard, 200); };
-    function renderDashboard() {
+    const renderDashboardSoon = () => { clearTimeout(dashTimer); dashTimer = setTimeout(() => renderDashboard(false), 200); };
+    function renderDashboard(animate = false) {
         const w = S.week, d = getWeek(w), p = w < 2 ? getWeek(w + 1) : null;
-        renderKpis(d, p); renderHardware(d, p); renderCondition(); renderHeat(d); renderBreakdowns(d);
+        const A = analyse(d, p); A.load = d.load;
+        renderBrief(d, A, animate); renderKpis(d, p, A); renderHardware(d, p, A); renderCondition(A); renderHeat(d); renderBreakdowns(d, A);
+        renderAiLive();
+    }
+
+    /* ---------- live AI commentary + impact in the simulation ---------- */
+    const aiFeed = [];
+    function aiSay(html, tone = '') { aiFeed.unshift({ t: Date.now(), html, tone }); aiFeed.length = Math.min(aiFeed.length, 4); renderAiLive(); }
+    function renderAiLive() {
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const done = live.recs.filter(r => r.restored && r.dur != null && r.mode !== 'reset' && r.restored >= today.getTime());
+        const robotMin = sum(done.map(r => r.dur)) / 60000;
+        const techMin = Math.max(0, done.length * ASSUME.handsMin - robotMin);
+        const downH = Math.max(0, done.length * ASSUME.manualMttrH - robotMin / 60);
+        const el = $('#ai-impact'); if (!el) return;
+        el.innerHTML = [
+            ['Swaps today', done.length],
+            ['Avg time broken', done.length ? fmtDur(robotMin * 60000 / done.length) : '—'],
+            ['Tech time saved', techMin >= 60 ? `${(techMin / 60).toFixed(1)} h` : `${Math.round(techMin)} min`],
+            ['Downtime avoided', `${downH.toFixed(1)} h`],
+        ].map(([k, v]) => `<div class="imp-t"><span>${k}</span><b>${v}</b></div>`).join('');
+        $('#ai-feed').innerHTML = aiFeed.length ? aiFeed.map(f => `<div class="af ${f.tone}"><span class="t">${fmtClock(f.t)}</span><p>${f.html}</p></div>`).join('') : '<div class="empty">Watching rack R-01. Start a scenario and Corvin AI will comment on each fault and swap.</div>';
+        const pill = $('#ai-live-pill'); if (pill) { pill.textContent = S.running ? 'analysing' : 'watching'; pill.className = 'pill ' + (S.running ? 'auto' : ''); }
+    }
+    // what the AI says right after a swap: links the live event to the weekly pattern
+    function aiOnSwap(s, b, took) {
+        const d = getWeek(0), g = diagnose(d, b.comp), v = partVerdict(g), c = comp(b.comp);
+        const manual = ASSUME.handsMin;
+        let msg = `<b>${s.id} · ${c.abbr}</b> back online in ${fmtDur(took)} (a manual swap is about ${manual} min hands-on, ${ASSUME.manualMttrH} h end to end). `;
+        if (v.tone !== 'ok') msg += `This is ${c.abbr} failure #${g.n} this week. ${v.head}.`;
+        else msg += `${c.abbr} is within the benchmark: no action needed on the part.`;
+        if (spares[b.comp] <= 1) msg += ` Only <b>${spares[b.comp]}</b> spare ${c.abbr} left: restock soon.`;
+        aiSay(msg, v.tone === 'bad' ? 'bad' : spares[b.comp] <= 1 ? 'warn' : 'ok');
     }
 
     /* ============================================================
@@ -1768,7 +2036,7 @@
         S.tab = name;
         $$('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
         $('#view-sim').hidden = name !== 'sim'; $('#view-dash').hidden = name !== 'dash';
-        if (name === 'dash') renderDashboard(); else requestAnimationFrame(resize);
+        if (name === 'dash') renderDashboard(true); else requestAnimationFrame(resize);
         if (push) { try { history.replaceState(null, '', name === 'dash' ? '#dashboard' : '#simulation'); } catch (e) { /* file:// */ } }
     }
     $$('.tab').forEach(t => {
@@ -1803,6 +2071,22 @@
         if (!S.running && !S.manual) { S.mode = 'auto'; autoRun(++S.token); }
     });
     $('#btn-clear-log').addEventListener('click', () => { LOG = []; store.set(LOG_KEY, LOG); log('Log cleared.', 'system'); });
+
+    // presenter view: hide the technical panels (log, camera, telemetry, manual pad) for a pitch
+    function setPresenter(on) {
+        $('#app').classList.toggle('presenter', on); $('#chk-presenter').checked = on;
+        store.set('corvin.presenter', on); setTimeout(resize, 60);
+    }
+    $('#chk-presenter').addEventListener('change', e => setPresenter(e.target.checked));
+    // one-click pitch: faults appear → robot swaps them (follow cam) → AI briefing opens
+    $('#btn-pitch').addEventListener('click', () => {
+        if (S.estop) resetEstop();
+        S.failArmed = false; $('#chk-fail').checked = false;
+        S.speed = 2; $$('#speed-seg button').forEach(x => x.classList.toggle('on', x.dataset.sp === '2'));
+        S.pitch = true; setView('follow');
+        aiSay('Pitch demo: servers in rack R-01 just reported failed parts. Watch Corvin find each slot (ArUco), confirm the server (barcode) and hot-swap the part. No technician needed.', '');
+        startScenario('B');
+    });
     $$('#week-seg button').forEach(b => b.addEventListener('click', () => { S.week = +b.dataset.w; $$('#week-seg button').forEach(x => x.classList.toggle('on', x === b)); renderDashboard(); }));
     $('#heat-all').addEventListener('click', () => { S.heatComp = null; renderDashboard(); });
 
@@ -1868,7 +2152,7 @@
             }
             controls.update();
             renderer.render(scene, cam);
-            povRenderer.render(scene, povCam);
+            if (povCanvas.clientWidth) povRenderer.render(scene, povCam);
         }
         hudT += dt;
         if (hudT > .1) { hudT = 0; const w = S.tab === 'sim' ? updateTelemetry() : null; if (w) updateCamHud(w); $('#cam-clock').textContent = fmtClock(Date.now()); }
@@ -1879,6 +2163,7 @@
        Init
     ============================================================ */
     setRail(store.get('corvin.rail', 'open') === 'collapsed');
+    setPresenter(store.get('corvin.presenter', true));
     initScene();
     refreshSpareLabel(); renderAllServers(); setLogOpen(logOpen); renderOrders(); updateHud(); padStatus();
     $$('#sc-seg button').forEach(b => b.classList.toggle('on', b.dataset.sc === 'A'));
